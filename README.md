@@ -6,7 +6,7 @@ ML measure to predict the risk score for observations
 - Yang Xiang (FrantzXY)
 - Rundong Hua (stevenhua0320)
 - Siyan Li (Kether0111)
-- Enming Yang
+- Enming Yang (EnmingYang)
 - Jiacheng He
 
 The link of the competition could be found here:
