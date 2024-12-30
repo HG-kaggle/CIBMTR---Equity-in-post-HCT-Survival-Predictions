@@ -13,7 +13,7 @@ numerical_columns = train.select_dtypes(include=['number']).columns.tolist()
 print("Categorical Columns:", categorical_columns)
 print("Numerical Columns:", numerical_columns)
 
-# Linear interpolation for numerical columns
+# Linear interpolation for numerical columns in data
 train[numerical_columns] = train[numerical_columns].interpolate(method='linear', limit_direction='both')
 
 # Fill categorical columns with most frequent value (mode) in each column
