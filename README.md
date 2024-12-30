@@ -17,6 +17,7 @@ The project is considered to be a success if:
 1. The final prediction accuracy is over 85%, if we accomplish to 90%, we got it. 
 
 **Agenda for the meeting**
+
 2024-12-30
 - [ ] 1. Register for Kaggle and GH, share this project, brief introduction for GH usage for members that do not know the functionality of GH.
 - [x] 2. Enrol in teams in Kaggle
