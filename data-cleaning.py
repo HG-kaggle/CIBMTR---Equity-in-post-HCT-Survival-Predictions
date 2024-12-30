@@ -6,7 +6,7 @@ import matplotlib as mp
 import xgboost as xgb
 
 train = pd.read_csv('train.csv')
-print(train)
+
 
 categorical_columns = train.select_dtypes(include=['object', 'category']).columns.tolist()
 numerical_columns = train.select_dtypes(include=['number']).columns.tolist()
@@ -25,5 +25,3 @@ for col in categorical_columns:
 
 print(train.isnull().sum())
 
-print(train)
-# the train file now has no NA
