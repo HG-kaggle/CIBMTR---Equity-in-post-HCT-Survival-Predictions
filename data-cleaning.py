@@ -6,7 +6,7 @@ import matplotlib as mp
 import xgboost as xgb
 
 train = pd.read_csv('train.csv')
-
+# This is for test purpose to fix 
 
 categorical_columns = train.select_dtypes(include=['object', 'category']).columns.tolist()
 numerical_columns = train.select_dtypes(include=['number']).columns.tolist()
