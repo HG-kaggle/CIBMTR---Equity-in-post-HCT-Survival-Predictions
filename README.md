@@ -1,2 +1,34 @@
 # CIBMTR---Equity-in-post-HCT-Survival-Predictions
 ML measure to predict the risk score for observations
+### This is the Kaggle competition for CIBMTR - Equity in post-HCT Survival Predictions
+
+**Members of this project** :
+- Yang Xiang
+- Rundong Hua (stevenhua0320)
+- Siyan Li
+- Enming Yang
+- Jiacheng He
+
+The link of the competition could be found here:
+https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/overview
+
+**High level Goals**
+The project is considered to be a success if:
+1. The final prediction accuracy is over 85%, if we accomplish to 90%, we got it. 
+
+**Agenda for the meeting**
+2024-12-30
+- [ ] 1.  Register for Kaggle and GH, share this project, brief introduction for GH usage for members that do not know the functionality of GH.
+- [ ] 2. Enrol in teams in Kaggle
+- [ ] 3. Background information on the project (life-science, C-index(enhanced one), objective of the model)
+- [ ] 4. Introduction on the variables on the training set
+- [ ] 5. Discussion on the preliminary model that we use to predict. (XGboost in survival analysis, classification work on real event before conducting XGboost?)
+- [ ] 6. Schedule in meeting.
+
+**Notes for the meeting**
+
+
+**Reference**
+The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
+The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003
+More on the subject of the work: Tushar Deshpande, Deniz Akdemir, Walter Reade, Ashley Chow, Maggie Demkin, and Yung-Tsi Bolon. CIBMTR - Equity in post-HCT Survival Predictions. https://kaggle.com/competitions/equity-post-HCT-survival-predictions, 2024. Kaggle.
