@@ -3,9 +3,9 @@ ML measure to predict the risk score for observations
 ### This is the Kaggle competition for CIBMTR - Equity in post-HCT Survival Predictions
 
 **Members of this project** :
-- Yang Xiang
+- Yang Xiang (FrantzXY)
 - Rundong Hua (stevenhua0320)
-- Siyan Li
+- Siyan Li (Kether0111)
 - Enming Yang
 - Jiacheng He
 
