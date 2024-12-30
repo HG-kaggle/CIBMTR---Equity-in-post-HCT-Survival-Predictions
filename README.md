@@ -18,12 +18,15 @@ The project is considered to be a success if:
 
 **Agenda for the meeting**
 2024-12-30
-- [ ] 1.  Register for Kaggle and GH, share this project, brief introduction for GH usage for members that do not know the functionality of GH.
+- [ ] 1. Register for Kaggle and GH, share this project, brief introduction for GH usage for members that do not know the functionality of GH.
 - [x] 2. Enrol in teams in Kaggle
 - [x] 3. Background information on the project (life-science, C-index(enhanced one), objective of the model)
 - [x] 4. Introduction on the variables on the training set
 - [ ] 5. Discussion on the preliminary model that we use to predict. (XGboost in survival analysis, classification work on real event before conducting XGboost?)
 - [ ] 6. Schedule in meeting.
+
+2024-12-31
+- [ ] 1. Data cleaning, imputation on NA values, what method should we use to impute the categorical values?
 
 **Notes for the meeting**
 
