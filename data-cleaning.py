@@ -21,3 +21,4 @@ for col in categorical_columns:
 print(train.isnull().sum())
 
 print(train)
+# the train file now has no NA
