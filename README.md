@@ -28,6 +28,7 @@ The project is considered to be a success if:
 
 2024-12-31
 - [ ] 1. Data cleaning, imputation on NA values, what method should we use to impute the categorical values?
+- [ ] 2. Since the dimension for the variables is too high, we should do dimension reduction for variables with MCA for categorical variables & LDA for numerical variables.
 
 **Notes for the meeting**
 
