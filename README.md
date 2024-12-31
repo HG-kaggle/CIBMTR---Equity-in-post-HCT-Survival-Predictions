@@ -20,7 +20,7 @@ The project is considered to be a success if:
 
 2024-12-30
 - [ ] 1. Register for Kaggle and GH, share this project, brief introduction for GH usage for members that do not know the functionality of GH.
-- [x] 2. Enrol in teams in Kaggle
+- [x] 2. Enroll in teams in Kaggle
 - [x] 3. Background information on the project (life-science, C-index(enhanced one), objective of the model)
 - [x] 4. Introduction on the variables on the training set
 - [ ] 5. Discussion on the preliminary model that we use to predict. (XGboost in survival analysis, classification work on real event before conducting XGboost?)
