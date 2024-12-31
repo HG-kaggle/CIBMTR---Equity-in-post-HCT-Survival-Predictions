@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as mp
 import xgboost as xgb
+import scipy as sp
 
 train = pd.read_csv('train.csv')
 # This is for test purpose to fix 
