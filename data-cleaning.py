@@ -17,6 +17,8 @@ print("Numerical Columns:", numerical_columns)
 
 # Linear interpolation for numerical columns in data
 train[numerical_columns] = train[numerical_columns].interpolate(method='linear', limit_direction='both')
+# train[numerical_columns] = train[numerical_columns].interpolate(method="polynomial", order=2)
+
 
 # Fill categorical columns with most frequent value (mode) in each column
 # (we assume that the missing columns should be imputed with mode value, we would check back later
@@ -26,4 +28,10 @@ for col in categorical_columns:
 
 print(train.isnull().sum())
 
-# efs = 1
+
+# Part 2 Since besides efs and efs_time, we have remaining 57 variables, which is feasible to analyze the trend
+# and perform the classification work. As in the project efs=0 means we do not know whether the observation
+# confront the event, this step aims to classify the efs=0 population with "highly probable" efs=1
+# population and the others remain with efs=0.
+
+
