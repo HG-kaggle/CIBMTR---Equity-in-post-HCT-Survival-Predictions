@@ -26,3 +26,4 @@ for col in categorical_columns:
 
 print(train.isnull().sum())
 
+# efs = 1
