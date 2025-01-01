@@ -20,7 +20,7 @@ train[numerical_columns] = train[numerical_columns].interpolate(method='linear',
 
 # Fill categorical columns with most frequent value (mode) in each column
 # (we assume that the missing columns should be imputed with mode value, we would check back later
-# whether this is appropriate）
+# whether this is appropriate）we might use ffill
 for col in categorical_columns:
     train[col] = train[col].fillna(train[col].mode()[0])
 
