@@ -7,7 +7,7 @@ ML measure to predict the risk score for observations
 - Rundong Hua (stevenhua0320)
 - Siyan Li (Kether0111)
 - Enming Yang (EnmingYang)
-- Jiacheng He
+- Jiacheng He (hej159153)
 
 The link of the competition could be found here:
 https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/overview
