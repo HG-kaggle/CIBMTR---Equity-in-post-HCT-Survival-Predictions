@@ -31,7 +31,7 @@ The project is considered to be a success if:
 - [ ] 2. Since the dimension for the variables is too high, we should do dimension reduction for variables with MCA for categorical variables & LDA for numerical variables.
 
 2025-01-01
-- [ ] 1. clustering algorithm analysis for complex events. (efs is a complex event, incorporating death, replapse ...)
+- [ ] 1. clustering algorithm analysis for complex events. (efs is a complex event, incorporating death, replapse ...对年龄种族和efs是否等于零做好分类后再依据变量区分风险)
 
 **Notes for the meeting**
 
