@@ -33,6 +33,9 @@ The project is considered to be a success if:
 2025-01-01
 - [ ] 1. clustering algorithm analysis for complex events. (efs is a complex event, incorporating death, replapse ...对年龄种族和efs是否等于零做好分类后再依据变量区分风险)
 
+2025-01-02
+- [x] 1. Understand the process of HCT, understand the variables in depth. (Rundong Hua, Siyan Li)
+
 ### Notes for the meeting
 **1. Data cleaning & Imputation**
 
@@ -52,7 +55,20 @@ K最近距离邻法（K-means clustering）
 同均值插补的方法都属于单值插补，不同的是，它用层次聚类模型预测缺失变量的类型，再以该类型的均值插补。假设X=(X1,X2…Xp)为信息完全的变量，Y为存在缺失值的变量，那么首先对X或其子集行聚类，然后按缺失个案所属类来插补不同类的均值。如果在以后统计分析中还需以引入的解释变量和Y做分析，那么这种插补方法将在模型中引入自相关，给分析造成障碍。
 
 直接在包含空值的数据上进行数据挖掘。这类方法包括贝叶斯网络和人工神经网络等。
-贝叶斯网络是用来表示变量间连接概率的图形模式，它提供了一种自然的表示因果信息的方法，用来发现数据间的潜在关系。在这个网络中，用节点表示变量，有向边表示变量间的依赖关系。贝叶斯网络仅适合于对领域知识具有一定了解的情况，至少对变量间的依赖关系较清楚的情况。否则直接从数据中学习贝叶斯网的结构不但复杂性较高（随着变量的增加，指数级增加），网络维护代价昂贵，而且它的估计参数较多，为系统带来了高方差，影响了它的预测精度。当在任何一个对象中的缺失值数量很大时，存在指数爆炸的危险。（在我们的case下有梯度/指数爆炸的风险）
+贝叶斯网络是用来表示变量间连接概率的图形模式，它提供了一种自然的表示因果信息的方法，用来发现数据间的潜在关系。在这个网络中，用节点表示变量，有向边表示变量间的依赖关系。贝叶斯网络仅适合于对领域知识具有一定了解的情况，至少对变量间的依赖关系较清楚的情况。否则直接从数据中学习贝叶斯网的结构不但复杂性较高（随着变量的增加，指数级增加），网络维护代价昂贵，而且它的估计参数较多，为系统带来了高方差，影响了它的预测精度。
+当在任何一个对象中的缺失值数量很大时，存在指数爆炸的危险。（在我们的case下有梯度/指数爆炸的风险）
+
+** Variable Explain **
+Mostly could be found in excel file and screenshot of notes in Wechat group (2025-01-02)
+Here we explain what in notes not covered.
+
+graft type(强调干细胞移植位置策略)：Peripheral blood (PB), Bone Marrow (BM)
+product type(强调干细胞供体位置来源)： Peripheral blood (PB), Bone Marrow (BM)
+Notice that even though their categories are the same, they carry different meanings
+
+Ex: 患者A可以从捐赠者B获得Bone Marrow位置的造血干细胞，但是因为身体原因，只能从peripheral blood处
+进行造血干细胞移植，这里对于患者A进行分析，它的graft type是PB，但是product type是BM.
+
 
 
 
