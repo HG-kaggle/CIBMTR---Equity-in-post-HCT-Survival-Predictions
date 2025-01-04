@@ -10,6 +10,8 @@ from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
+from scipy.spatial.distance import squareform
+from gower import gower_matrix
 
 
 ## Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
@@ -37,6 +39,132 @@ for col in categorical_columns:
 # Check if the processed train dataset has any missing values.
 print(train.isnull().sum())
 
+# This NA imputation for NA is not sufficient for categorical variables because
+# some categorical variables, such as dri_score, has values of 'N/A - non-malignant indication.'
+# These are actually NA and thus needs to be converted into "NA."
+
+# Replace NA-like strings for dri_score:
+na_mapping_dri = {
+    'Missing disease status': '-1',
+    'N/A - disease not classifiable': '-2',
+    'N/A - non-malignant indication': '-3',
+    'N/A - pediatric': '-4'
+}
+train['dri_score'] = train['dri_score'].replace(na_mapping_dri)
+
+# Replace NA strings for psych_disturb:
+na_mapping_psy = {
+    'Not Done': 'NA'
+}
+train['psych_disturb'] = train['psych_disturb'].replace(na_mapping_psy)
+
+# Replace NA strings for cyto_score:
+na_mapping_cyto = {
+    'TBD': 'NA',
+    'Other': 'NA',
+    'Not tested': 'NA'
+}
+train['cyto_score'] = train['cyto_score'].replace(na_mapping_cyto)
+
+# Replace NA string for conditioning_intensity:
+na_mapping_ci = {
+    'N/A, F(pre-TED) not submitted': 'NA',
+    'No drugs reported': 'NA'
+}
+train['conditioning_intensity'] = train['conditioning_intensity'].replace(na_mapping_ci)
+
+# Impute not used value string for melphalan_dose:
+na_mapping_mel ={
+    "N/A, Mel not given": 'Not Used'
+}
+train['melphalan_dose'] = train['melphalan_dose'].replace(na_mapping_mel)
 
 
+def not_done_cleaning(data: pd.DataFrame):
+    """
+    To automatically replace all "Not done" string values within categorical columns with 'NA'.
+
+    Returns
+    -------
+    None
+    """
+    na_mapping = {
+        'Not done': 'NA'
+    }
+    categorical_col = data.select_dtypes(exclude=[np.number]).columns
+    for col_ID in categorical_col:
+        if 'Not done' in data[col_ID]:
+            data[col_ID] = data[col_ID].replace(na_mapping)
+
+
+not_done_cleaning(train)
+
+def not_tested_cleaning(data: pd.DataFrame):
+    """
+    To automatically replace all "Not tested" string values within categorical columns with 'NA'.
+
+    Returns
+    -------
+    None
+    """
+    na_mapping_nt = {
+        'Not tested': 'NA'
+    }
+    categorical_col_nt = data.select_dtypes(exclude=[np.number]).columns
+    for col_nt in categorical_col_nt:
+        if 'Not tested' in data[col_nt]:
+            data[col_nt] = data[col_nt].replace(na_mapping_nt)
+
+not_tested_cleaning(train)
+
+def tbd_cleaning(data: pd.DataFrame):
+    """
+    To automatically replace all "TBD" string values within categorical columns with 'NA'.
+
+    Returns
+    -------
+    None
+    """
+    na_mapping_tbd = {
+        'TBD': 'NA'
+    }
+    categorical_col_tbd = data.select_dtypes(exclude=[np.number]).columns
+    for col_tbd in categorical_col_tbd:
+        if 'TBD' in data[col_tbd]:
+            data[col_tbd] = data[col_tbd].replace(na_mapping_tbd)
+
+tbd_cleaning(train)
+
+
+## Part 2: Scale the data and apply Agglomerative Clustering.
+
+### 1 scaling data
+scaler = StandardScaler()
+train_numeric_scaled = pd.DataFrame(scaler.fit_transform(train[numerical_columns]),
+                                 columns=numerical_columns, index=train.index)
+train_categorical = train[categorical_columns]
+train_scaled = pd.concat([train_numeric_scaled, train_categorical], axis=1)
+train_scaled = train_scaled[train.columns]
+
+
+
+### 2 Fitting agglo
+# Use Hamming distance (for multi-class nominal categorical data, but hamming only works for
+# discrete numerical values.)
+
+# Calculate Gower distance matrix
+distance_matrix = gower_matrix(train_scaled)
+
+# Convert the distance matrix into a condensed form required by AgglomerativeClustering.
+custom_distance = squareform(distance_matrix, checks=False)
+
+# Apply Agglomerative Clustering
+agglo = AgglomerativeClustering(n_clusters=2, metric='precomputed', linkage='average')
+clusters = agglo.fit_predict(custom_distance)
+
+# Add cluster labels to the original dataset
+train_scaled['Cluster'] = clusters
+
+# Print the first few rows of the dataset with cluster labels
+print(train_scaled.head())
 
