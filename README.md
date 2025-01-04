@@ -71,7 +71,9 @@ Ex: 患者A可以从捐赠者B获得Bone Marrow位置的造血干细胞，但是
 
 
 
+**Problems in data cleaning**
 
+1. Some levels are ambiguous, variables are: conditioning density, prim_disease_hct, tbi_status, gvhd_proph
 **Reference**
 The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
 The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003
