@@ -133,36 +133,6 @@ def tbd_cleaning(data: pd.DataFrame):
 
 tbd_cleaning(train)
 
-# Part 2: Scale the data and apply Agglomerative Clustering.
-
-# 1 scaling data
-scaler = StandardScaler()
-train_numeric_scaled = pd.DataFrame(scaler.fit_transform(train[numerical_columns]),
-                                    columns=numerical_columns, index=train.index)
-train_categorical = train[categorical_columns]
-train_scaled = pd.concat([train_numeric_scaled, train_categorical], axis=1)
-train_scaled = train_scaled[train.columns]
-
-# 2 Fitting agglo
-# Use Hamming distance (for multi-class nominal categorical data, but hamming only works for
-# discrete numerical values.)
-
-# Calculate Gower distance matrix
-distance_matrix = gower_matrix(train_scaled)
-
-
-# Apply Agglomerate Clustering
-agglo = AgglomerativeClustering(n_clusters=4, metric='precomputed', linkage='average')
-clusters = agglo.fit_predict(distance_matrix)
-
-# Add cluster labels to the original dataset
-train_scaled['Cluster'] = clusters
-
-# Print the first few rows of the dataset with cluster labels
-print(train_scaled.head())
-
-# Extract cluster
-
-
+# Part 2: Classification of efs (ML) Use Catboost to classify
 
 
