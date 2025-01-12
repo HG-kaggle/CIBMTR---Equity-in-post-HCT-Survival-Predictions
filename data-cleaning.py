@@ -151,7 +151,7 @@ distance_matrix = gower_matrix(train_scaled)
 custom_distance = squareform(distance_matrix, checks=False)
 
 # Apply Agglomerate Clustering
-agglo = AgglomerativeClustering(n_clusters=2, metric='precomputed', linkage='average')
+agglo = AgglomerativeClustering(n_clusters=4, metric='precomputed', linkage='average')
 clusters = agglo.fit_predict(custom_distance)
 
 # Add cluster labels to the original dataset
