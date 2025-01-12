@@ -98,3 +98,16 @@ k-modes的优点： 可适用于离散性数据集、时间复杂度更低。k-m
 The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
 The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003
 More on the subject of the work: Tushar Deshpande, Deniz Akdemir, Walter Reade, Ashley Chow, Maggie Demkin, and Yung-Tsi Bolon. CIBMTR - Equity in post-HCT Survival Predictions. https://kaggle.com/competitions/equity-post-HCT-survival-predictions, 2024. Kaggle.
+
+##2025/01/25 Meeting Synthesis:##
+
+1. **推翻之前所有clustering，catboost工作，没有意义。**
+2. 先从理解项目目标开始。见“https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003”帖子。C-Index不需要去考虑efs=0时候efs_time的不确定性。我们只需要确定efs_time严格意义上小于或者大于另外一个efs_time的情况。比如，见上链接帖子，C-Index Denominator里面没有D-F这一项，因为F是efs=0,虽然F的efs_time比D的短，但是我们不知道F是在D前面还是后面发病了，我们只知道F在efs_time之前没有发病。**所以，我们之前的误区就是我们尝试去quantify efs=0的不确定性。但是显然，主办方的C-Index显示我们不需要去比较不确定性的efs=0的time，我们只需要确定严格意义上小于或者大于另外一个efs_time的情况。** 所以，我们需要做的是classify efs=1 and efs=0, 然后根据classification的efs=1/0, 将efs=1 和efs=0的两个情况分开来做regression predict他们的efs_time.
+3. 现在主要矛盾和问题是如何解决缺失值。（classification & regression的数据不能有NA）
+
+
+
+
+
+
+
