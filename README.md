@@ -30,16 +30,12 @@ The project is considered to be a success if:
 - [ ] 1. Data cleaning, imputation on NA values, what method should we use to impute the categorical values?
 - [ ] 2. Since the dimension for the variables is too high, we should do dimension reduction for variables with MCA for categorical variables & LDA for numerical variables.
 
-2025-01-01
-- [ ] 1. clustering algorithm analysis for complex events. (efs is a complex event, incorporating death, replapse ...对年龄种族和efs是否等于零做好分类后再依据变量区分风险)
-
-2025-01-02
-- [x] 1. Understand the process of HCT, understand the variables in depth. (Rundong Hua, Siyan Li)
-
 2025-01-12
 This week's action:
-- [ ] 1. Next step: Agglomerate algorithm run in a server (gcp), write/find api for visulization/output for the result.
-- [ ] 2. Tackling the ambiguous variables. variable整理
+- [ ] 1. Tackling the ambiguous variables. variable整理
+- [ ] 2. **推翻之前所有clustering，catboost工作，没有意义。**
+- [ ] 3. 先从理解项目目标开始。见“https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003” 帖子。C-Index不需要去考虑efs=0时候efs_time的不确定性。我们只需要确定efs_time严格意义上小于或者大于另外一个efs_time的情况。比如，见上链接帖子，C-Index Denominator里面没有D-F这一项，因为F是efs=0,虽然F的efs_time比D的短，但是我们不知道F是在D前面还是后面发病了，我们只知道F在efs_time之前没有发病。**所以，我们之前的误区就是我们尝试去quantify efs=0的不确定性。但是显然，主办方的C-Index显示我们不需要去比较不确定性的efs=0的time，我们只需要确定严格意义上小于或者大于另外一个efs_time的情况。** 所以，我们需要做的是classify efs=1 and efs=0, 然后根据classification的efs=1/0, 将efs=1 和efs=0的两个情况分开来做regression predict他们的efs_time.
+- [ ] 4. 现在主要矛盾和问题是如何解决缺失值。（classification & regression的数据不能有NA）
 
 ### Notes for the meeting
 **1. Data cleaning & Imputation**
@@ -68,6 +64,13 @@ BIRCH算法(平衡迭代削减聚类法)：聚类特征使用3元组进行一个
 优缺点：
 适合大规模数据集，线性效率；
 只适合分布呈凸形或者球形的数据集、需要给定聚类个数和簇之间的相关参数；
+2. Gower 距离的定义非常简单。首先每个类型的变量都有特殊的距离度量方法，而且该方法会将变量标准化到[0,1]之间。接下来，利用加权线性组合的方法来计算最终的距离矩阵。不同类型变量的计算方法如下所示：
+连续型变量：利用归一化的曼哈顿距离
+顺序型变量：首先将变量按顺序排列，然后利用经过特殊调整的曼哈顿距离
+名义型变量：首先将包含 k 个类别的变量转换成 k 个 0-1 变量，然后利用 Dice 系数做进一步的计算优点：通俗易懂且计算方便
+缺点：非常容易受无标准化的连续型变量异常值影响，所以数据转换过程必不可少；该方法需要耗费较大的内存
+k-modes的优点： 可适用于离散性数据集、时间复杂度更低。k-modes的缺点： 需要事先对k值进行确定。
+3. 算法优化 ：agglomerate algorithm的算法优化。
 
 
 ** Variable Explain **
@@ -82,17 +85,10 @@ Ex: 患者A可以从捐赠者B获得Bone Marrow位置的造血干细胞，但是
 进行造血干细胞移植，这里对于患者A进行分析，它的graft type是PB，但是product type是BM.
 
 
-
 **Problems in data cleaning**
 
 1. Some levels are ambiguous, variables are: conditioning density, prim_disease_hct, tbi_status, gvhd_proph
-2. Gower 距离的定义非常简单。首先每个类型的变量都有特殊的距离度量方法，而且该方法会将变量标准化到[0,1]之间。接下来，利用加权线性组合的方法来计算最终的距离矩阵。不同类型变量的计算方法如下所示：
-连续型变量：利用归一化的曼哈顿距离
-顺序型变量：首先将变量按顺序排列，然后利用经过特殊调整的曼哈顿距离
-名义型变量：首先将包含 k 个类别的变量转换成 k 个 0-1 变量，然后利用 Dice 系数做进一步的计算优点：通俗易懂且计算方便
-缺点：非常容易受无标准化的连续型变量异常值影响，所以数据转换过程必不可少；该方法需要耗费较大的内存
-k-modes的优点： 可适用于离散性数据集、时间复杂度更低。k-modes的缺点： 需要事先对k值进行确定。
-3. 算法优化 ：agglomerate algorithm的算法优化。
+
 **Reference**
 The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
 The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003

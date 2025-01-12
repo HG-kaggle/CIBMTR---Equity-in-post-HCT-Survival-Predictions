@@ -1,4 +1,3 @@
-# Author Yang Xiang, Date 2024 12 30.
 # All the group members have been added to the project
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -134,5 +133,3 @@ def tbd_cleaning(data: pd.DataFrame):
 tbd_cleaning(train)
 
 # Part 2: Classification of efs (ML) Use Catboost to classify
-
-
