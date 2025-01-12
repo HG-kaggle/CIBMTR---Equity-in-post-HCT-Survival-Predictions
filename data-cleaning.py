@@ -84,10 +84,10 @@ def not_done_cleaning(data: pd.DataFrame):
     na_mapping = {
         'Not done': 'NA'
     }
-    categorical_col = data.select_dtypes(exclude=[np.number]).columns
-    for col_ID in categorical_col:
-        if 'Not done' in data[col_ID]:
-            data[col_ID] = data[col_ID].replace(na_mapping)
+    categorical_col = data.select_dtypes(include=['object', 'category']).columns
+    # Apply replacement to each categorical column
+    for col in categorical_col:
+        data[col] = data[col].replace(na_mapping)
 
 
 not_done_cleaning(train)
@@ -104,9 +104,8 @@ def not_tested_cleaning(data: pd.DataFrame):
     na_mapping_nt = {
         'Not tested': 'NA'
     }
-    categorical_col_nt = data.select_dtypes(exclude=[np.number]).columns
+    categorical_col_nt = data.select_dtypes(include=['object', 'category']).columns
     for col_nt in categorical_col_nt:
-        if 'Not tested' in data[col_nt]:
             data[col_nt] = data[col_nt].replace(na_mapping_nt)
 
 
@@ -124,12 +123,88 @@ def tbd_cleaning(data: pd.DataFrame):
     na_mapping_tbd = {
         'TBD': 'NA'
     }
-    categorical_col_tbd = data.select_dtypes(exclude=[np.number]).columns
+    categorical_col_tbd = data.select_dtypes(include=['object', 'category']).columns
     for col_tbd in categorical_col_tbd:
-        if 'TBD' in data[col_tbd]:
             data[col_tbd] = data[col_tbd].replace(na_mapping_tbd)
-
 
 tbd_cleaning(train)
 
-# Part 2: Classification of efs (ML) Use Catboost to classify
+
+# EDA and dataset for Catboost
+
+df = pd.DataFrame(train)
+# remove column "ID" and "efs_time"
+cat_train = train.drop(columns=['ID'])
+cat_train = cat_train.drop(columns=['efs_time'])
+
+# Select categorical columns and Find the maximum cardinality
+categorical_columns = cat_train.select_dtypes(include=['object', 'category']).columns
+cardinality = {col: cat_train[col].nunique() for col in categorical_columns}
+max_cardinality = max(cardinality.values()) if cardinality else 0
+categorical_list = categorical_columns.tolist()
+
+# Debugging
+
+for col in categorical_list:
+    print(f"Unique values in {col}: {cat_train[col].unique()}")
+
+# Print the results
+print("Cardinality of categorical features:")
+print(cardinality)
+print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
+
+
+
+# Part 2: Classification of efs (ML) Use Catboost to classify efs (1 or 0)
+
+# train test split of train with efs = 1
+train_set, test_set = train_test_split(cat_train, test_size=0.25, random_state=42)
+X_train = train_set.drop(columns=['efs'])  # Features of train data
+y_train = train_set['efs']  # Outcome of train data
+X_test = test_set.drop(columns=['efs'])  # Features of test data
+y_test = test_set['efs']  # Target of test data
+# Convert the dataframes to numpy arrays (CatBoost works well with Pool format)
+train_pool = Pool(X_train, label=y_train, cat_features=categorical_list)
+test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
+
+# Use CatBoost
+
+# Define the parameter grid for the random grid search
+param_grid = {
+    'iterations': [100, 500, 1000, 1500],
+    'depth': [5, 8, 10, 15],
+    'learning_rate': [0.001, 0.01, 0.1],
+    'l2_leaf_reg': [1, 3, 5, 7],
+    'border_count': [32, 64, 128],  # Number of splits for numerical features
+}
+
+model = CatBoostClassifier(
+    loss_function='Logloss',
+    verbose=True, # Suppress training output for readability
+    one_hot_max_size=20,
+    cat_features=categorical_list
+)
+
+random_search = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=param_grid,
+    n_iter=20,  # Number of random samples to try
+    scoring='accuracy',  # Metric for evaluation
+    cv=10,  # Number of cross-validation folds
+    verbose=1,  # Show progress
+    random_state=42,  # Reproducibility
+    n_jobs=-1)  # Use all available processors
+
+random_search.fit(X_train, y_train)
+print("Best Parameters:", random_search.best_params_)
+print("Best Accuracy:", random_search.best_score_)
+
+# Initialize the CatBoost model with the best parameters
+best_params = random_search.best_params_
+model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=2000, plot=True)
+
+# Train the model with the training pool and evaluate on the test pool
+model.fit(train_pool, eval_set=test_pool, verbose=2000, plot=True)
+
+# Optional: If you want to access final predictions
+y_pred = model.predict(test_pool)
