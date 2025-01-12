@@ -93,6 +93,7 @@ Ex: 患者A可以从捐赠者B获得Bone Marrow位置的造血干细胞，但是
 缺点：非常容易受无标准化的连续型变量异常值影响，所以数据转换过程必不可少；该方法需要耗费较大的内存
 k-modes的优点： 可适用于离散性数据集、时间复杂度更低。k-modes的缺点： 需要事先对k值进行确定。
 3. 算法优化 ：agglomerate algorithm的算法优化。
+
 **Reference**
 The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
 The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003
