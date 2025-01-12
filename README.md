@@ -36,6 +36,11 @@ The project is considered to be a success if:
 2025-01-02
 - [x] 1. Understand the process of HCT, understand the variables in depth. (Rundong Hua, Siyan Li)
 
+2025-01-12
+This week's action:
+- [ ] 1. Next step: Agglomerate algorithm run in a server (gcp), write/find api for visulization/output for the result.
+- [ ] 2. Tackling the ambiguous variables. variable整理
+
 ### Notes for the meeting
 **1. Data cleaning & Imputation**
 
@@ -58,6 +63,13 @@ K最近距离邻法（K-means clustering）
 贝叶斯网络是用来表示变量间连接概率的图形模式，它提供了一种自然的表示因果信息的方法，用来发现数据间的潜在关系。在这个网络中，用节点表示变量，有向边表示变量间的依赖关系。贝叶斯网络仅适合于对领域知识具有一定了解的情况，至少对变量间的依赖关系较清楚的情况。否则直接从数据中学习贝叶斯网的结构不但复杂性较高（随着变量的增加，指数级增加），网络维护代价昂贵，而且它的估计参数较多，为系统带来了高方差，影响了它的预测精度。
 当在任何一个对象中的缺失值数量很大时，存在指数爆炸的危险。（在我们的case下有梯度/指数爆炸的风险）
 
+BIRCH算法
+BIRCH算法(平衡迭代削减聚类法)：聚类特征使用3元组进行一个簇的相关信息，通过构建满足分枝因子和簇直径限制的聚类特征树来求聚类，聚类特征树其实是一个具有两个参数分枝因子和类直径的高度平衡树；分枝因子规定了树的每个节点的子女的最多个数，而类直径体现了对这一类点的距离范围；非叶子节点为它子女的最大特征值；聚类特征树的构建可以是动态过程的，可以随时根据数据对模型进行更新操作。
+优缺点：
+适合大规模数据集，线性效率；
+只适合分布呈凸形或者球形的数据集、需要给定聚类个数和簇之间的相关参数；
+
+
 ** Variable Explain **
 Mostly could be found in excel file and screenshot of notes in Wechat group (2025-01-02)
 Here we explain what in notes not covered.
@@ -74,6 +86,13 @@ Ex: 患者A可以从捐赠者B获得Bone Marrow位置的造血干细胞，但是
 **Problems in data cleaning**
 
 1. Some levels are ambiguous, variables are: conditioning density, prim_disease_hct, tbi_status, gvhd_proph
+2. Gower 距离的定义非常简单。首先每个类型的变量都有特殊的距离度量方法，而且该方法会将变量标准化到[0,1]之间。接下来，利用加权线性组合的方法来计算最终的距离矩阵。不同类型变量的计算方法如下所示：
+连续型变量：利用归一化的曼哈顿距离
+顺序型变量：首先将变量按顺序排列，然后利用经过特殊调整的曼哈顿距离
+名义型变量：首先将包含 k 个类别的变量转换成 k 个 0-1 变量，然后利用 Dice 系数做进一步的计算优点：通俗易懂且计算方便
+缺点：非常容易受无标准化的连续型变量异常值影响，所以数据转换过程必不可少；该方法需要耗费较大的内存
+k-modes的优点： 可适用于离散性数据集、时间复杂度更低。k-modes的缺点： 需要事先对k值进行确定。
+3. 算法优化 ：agglomerate algorithm的算法优化。
 **Reference**
 The reference of XGboost: https://xgboost.readthedocs.io/en/latest/tutorials/aft_survival_analysis.html
 The reference of C-index: https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003
