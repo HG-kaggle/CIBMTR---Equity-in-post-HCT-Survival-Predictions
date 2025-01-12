@@ -19,6 +19,9 @@ from gower import gower_matrix
 train = pd.read_csv('equity-post-HCT-survival-predictions/train.csv')
 # This is for test purpose to fix
 
+## For de-bugging purpose, we first select 10 rows of data to try running agglo algorithm.
+# train = train.head(10)
+
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
 numerical_columns = train.select_dtypes(include=[np.number]).columns
 
@@ -147,15 +150,19 @@ train_scaled = train_scaled[train.columns]
 # Calculate Gower distance matrix
 distance_matrix = gower_matrix(train_scaled)
 
-# Convert the distance matrix into a condensed form required by Agglomerate Clustering.
-custom_distance = squareform(distance_matrix, checks=False)
 
 # Apply Agglomerate Clustering
-agglo = AgglomerativeClustering(n_clusters=2, metric='precomputed', linkage='average')
-clusters = agglo.fit_predict(custom_distance)
+agglo = AgglomerativeClustering(n_clusters=4, metric='precomputed', linkage='average')
+clusters = agglo.fit_predict(distance_matrix)
 
 # Add cluster labels to the original dataset
 train_scaled['Cluster'] = clusters
 
 # Print the first few rows of the dataset with cluster labels
 print(train_scaled.head())
+
+# Extract cluster
+
+
+
+
