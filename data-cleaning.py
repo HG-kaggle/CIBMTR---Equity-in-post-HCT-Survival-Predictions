@@ -182,8 +182,8 @@ sns.scatterplot(
 
 # Add titles and labels
 plt.title('Clusters Visualized by efs and efs_time', fontsize=16)
-plt.xlabel('efs', fontsize=14)
-plt.ylabel('efs_time', fontsize=14)
+plt.xlabel('efs_time', fontsize=14)
+plt.ylabel('efs', fontsize=14)
 plt.legend(title='Cluster', fontsize=12)
 plt.grid(alpha=0.3)
 
