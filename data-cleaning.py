@@ -197,7 +197,7 @@ best_params = random_search.best_params_
 model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=False)
 
 # Train the model with the training pool and evaluate on the test pool
-model.fit(train_pool, eval_set=test_pool, verbose=2000, plot=True)
+model.fit(train_pool, eval_set=test_pool, verbose=False)
 
 # Optional: If you want to access final predictions
 y_pred = model.predict(test_pool)
