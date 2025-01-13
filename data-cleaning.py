@@ -165,7 +165,7 @@ test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
 # Define the parameter grid for the random grid search
 param_grid = {
     'iterations': [100, 500, 1000, 1500],
-    'depth': [5, 8, 10, 15],
+    'depth': [5, 10, 15, 20],
     'learning_rate': [0.001, 0.01, 0.1],
     'l2_leaf_reg': [1, 3, 5, 7],
     'border_count': [32, 64, 128],  # Number of splits for numerical features
