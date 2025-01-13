@@ -7,19 +7,12 @@ import xgboost as xgb
 import scipy as sp
 from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler
-from scipy.spatial.distance import squareform
-from gower import gower_matrix
 
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
 
 train = pd.read_csv('equity-post-HCT-survival-predictions/train.csv')
 # This is for test purpose to fix
-
-## For de-bugging purpose, we first select 10 rows of data to try running agglo algorithm.
-# train = train.head(10)
 
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
 numerical_columns = train.select_dtypes(include=[np.number]).columns
@@ -201,7 +194,7 @@ print("Best Accuracy:", random_search.best_score_)
 
 # Initialize the CatBoost model with the best parameters
 best_params = random_search.best_params_
-model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=2000, plot=True)
+model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=False)
 
 # Train the model with the training pool and evaluate on the test pool
 model.fit(train_pool, eval_set=test_pool, verbose=2000, plot=True)
