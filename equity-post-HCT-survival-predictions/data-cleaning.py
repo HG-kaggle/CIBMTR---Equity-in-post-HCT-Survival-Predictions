@@ -13,7 +13,7 @@ from scipy.stats import uniform, randint
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
 
-train = pd.read_csv('equity-post-HCT-survival-predictions/train.csv')
+train = pd.read_csv('train.csv')
 # This is for test purpose to fix
 
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
@@ -169,8 +169,8 @@ test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
 
 # Define the parameter grid for the random grid search
 param_grid = {
-    'iterations': randint(500, 1500),
-    'depth': randint(3, 16),
+    'iterations': randint(800, 2000),
+    'depth': randint(1, 10),
     'learning_rate': uniform(0.001, 0.1),
     'l2_leaf_reg': uniform(3, 10),
     'border_count': randint(32, 254),  # Number of splits for numerical features
@@ -186,7 +186,7 @@ model = CatBoostClassifier(
 random_search = RandomizedSearchCV(
     estimator=model,
     param_distributions=param_grid,
-    n_iter=50,  # Number of random samples of parameter grid to try, we can try 50 or even 100.
+    n_iter=100,  # Number of random samples of parameter grid to try, we can try 50 or even 100.
     scoring='accuracy',  # Metric for evaluation
     cv=10,  # Number of cross-validation folds
     verbose=1,  # Show progress
