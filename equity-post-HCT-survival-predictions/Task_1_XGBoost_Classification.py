@@ -160,7 +160,7 @@ boost_train.dtypes
 
 # Part 2: Classification of efs (ML) Use Catboost to classify efs (1 or 0)
 
-# train test split of train with efs = 1
+# train test split of train
 train_set, test_set = train_test_split(boost_train, test_size=0.25, random_state=42)
 X_train = train_set.drop(columns=['efs'])
 y_train = train_set['efs']
