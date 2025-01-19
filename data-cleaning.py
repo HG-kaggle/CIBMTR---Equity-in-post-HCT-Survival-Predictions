@@ -7,6 +7,8 @@ import xgboost as xgb
 import scipy as sp
 from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import uniform, randint
+
 
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
@@ -164,11 +166,11 @@ test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
 
 # Define the parameter grid for the random grid search
 param_grid = {
-    'iterations': [100, 500, 1000, 1500],
-    'depth': [5, 10, 15, 20],
-    'learning_rate': [0.001, 0.01, 0.1],
-    'l2_leaf_reg': [1, 3, 5, 7],
-    'border_count': [32, 64, 128],  # Number of splits for numerical features
+    'iterations': randint(500, 1500),
+    'depth': randint(3, 16),
+    'learning_rate': uniform(0.001, 0.1),
+    'l2_leaf_reg': uniform(3, 10),
+    'border_count': randint(32, 254),  # Number of splits for numerical features
 }
 
 model = CatBoostClassifier(
@@ -181,12 +183,12 @@ model = CatBoostClassifier(
 random_search = RandomizedSearchCV(
     estimator=model,
     param_distributions=param_grid,
-    n_iter=20,  # Number of random samples to try
+    n_iter=50,  # Number of random samples of parameter grid to try, we can try 50 or even 100.
     scoring='accuracy',  # Metric for evaluation
     cv=10,  # Number of cross-validation folds
     verbose=1,  # Show progress
     random_state=42,  # Reproducibility
-    n_jobs=-1)  # Use all available processors
+    n_jobs=-1)  # Use all available CPU processors
 
 random_search.fit(X_train, y_train)
 print("Best Parameters:", random_search.best_params_)
