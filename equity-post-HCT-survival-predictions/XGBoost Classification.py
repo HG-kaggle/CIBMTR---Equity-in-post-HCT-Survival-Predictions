@@ -1,19 +1,22 @@
 # All the group members have been added to the project
+import seaborn as sns
+import random
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib as mp
 import xgboost as xgb
 import scipy as sp
-from catboost import CatBoostClassifier, Pool
+from xgboost import XGBClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import uniform, randint
+from sklearn.metrics import accuracy_score
 
 
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
 
-train = pd.read_csv('equity-post-HCT-survival-predictions/train.csv')
+train = pd.read_csv('train.csv')
 # This is for test purpose to fix
 
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
@@ -129,19 +132,19 @@ tbd_cleaning(train)
 
 df = pd.DataFrame(train)
 # remove column "ID" and "efs_time"
-cat_train = train.drop(columns=['ID'])
-cat_train = cat_train.drop(columns=['efs_time'])
+boost_train = train.drop(columns=['ID'])
+boost_train = boost_train.drop(columns=['efs_time'])
 
 # Select categorical columns and Find the maximum cardinality
-categorical_columns = cat_train.select_dtypes(include=['object', 'category']).columns
-cardinality = {col: cat_train[col].nunique() for col in categorical_columns}
+categorical_columns = boost_train.select_dtypes(include=['object', 'category']).columns
+cardinality = {col: boost_train[col].nunique() for col in categorical_columns}
 max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
 # Debugging
 
 for col in categorical_list:
-    print(f"Unique values in {col}: {cat_train[col].unique()}")
+    print(f"Unique values in {col}: {boost_train[col].unique()}")
 
 # Print the results
 print("Cardinality of categorical features:")
@@ -149,60 +152,101 @@ print(cardinality)
 print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
 
 
+for col in categorical_list:
+   boost_train[col] = boost_train[col].astype('category')
 
-
-
+# print the dtypes attribute
+boost_train.dtypes
 
 # Part 2: Classification of efs (ML) Use Catboost to classify efs (1 or 0)
 
 # train test split of train with efs = 1
-train_set, test_set = train_test_split(cat_train, test_size=0.25, random_state=42)
-X_train = train_set.drop(columns=['efs'])  # Features of train data
-y_train = train_set['efs']  # Outcome of train data
-X_test = test_set.drop(columns=['efs'])  # Features of test data
-y_test = test_set['efs']  # Target of test data
-# Convert the dataframes to numpy arrays (CatBoost works well with Pool format)
-train_pool = Pool(X_train, label=y_train, cat_features=categorical_list)
-test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
+train_set, test_set = train_test_split(boost_train, test_size=0.25, random_state=42)
+X_train = train_set.drop(columns=['efs'])
+y_train = train_set['efs']
+X_test = test_set.drop(columns=['efs'])
+y_test = test_set['efs']
 
-# Use CatBoost
+# Create DMatrix objects
+dtrain = xgb.DMatrix(X_train, label=y_train, enable_categorical=True)
+dtest = xgb.DMatrix(X_test, label=y_test, enable_categorical=True)
 
-# Define the parameter grid for the random grid search
+# Define parameter ranges for random search
 param_grid = {
-    'iterations': randint(500, 1500),
-    'depth': randint(3, 16),
-    'learning_rate': uniform(0.001, 0.1),
-    'l2_leaf_reg': uniform(3, 10),
-    'border_count': randint(32, 254),  # Number of splits for numerical features
+    "booster": ["gbtree", "dart"],
+    'min_child_weight': [random.uniform(0, 15) for _ in range(10)],
+    'max_depth': [random.randint(0, 16) for _ in range(10)],
+    'eta': [random.uniform(0, 1) for _ in range(10)],  # learning_rate
+    'gamma': [random.uniform(0, 10) for _ in range(10)],
+    'max_delta_step': [random.uniform(0, 10) for _ in range(10)],
+    'subsample': [random.uniform(0, 1) for _ in range(10)],
+    "colsample_bytree": [random.uniform(0, 1) for _ in range(10)],
+    "colsample_bylevel": [random.uniform(0, 1) for _ in range(10)],
+    "colsample_bynode": [random.uniform(0, 1) for _ in range(10)],
+    'num_boost_round': [random.randint(10, 1500) for _ in range(10)],
+    'alpha': [random.uniform(0, 20) for _ in range(10)],
+    'lambda': [random.uniform(0, 20) for _ in range(10)]
 }
 
-model = CatBoostClassifier(
-    loss_function='Logloss',
-    verbose=True, # Suppress training output for readability
-    one_hot_max_size=20,
-    cat_features=categorical_list
+
+# Function to perform k-fold cross validation
+def xgb_cv_score(params, dtrain, num_boost_round=100, nfold=10):
+    cv_results = xgb.cv(
+        params,
+        dtrain,
+        num_boost_round=num_boost_round,
+        nfold=nfold,
+        metrics='error',
+        early_stopping_rounds=50,
+        seed=42
+    )
+    return cv_results['test-error-mean'].min()
+
+
+# Random search
+best_score = float('inf')
+best_params = None
+n_iter = 50
+
+for i in range(n_iter):
+    params = {
+        'objective': 'binary:logistic',
+        'eval_metric': 'error',
+        'booster': random.choice(param_grid['booster']),
+        'min_child_weight': random.choice(param_grid['min_child_weight']),
+        'max_depth': random.choice(param_grid['max_depth']),
+        'eta': random.choice(param_grid['eta']),
+        'gamma': random.choice(param_grid['gamma']),
+        'max_delta_step': random.choice(param_grid['max_delta_step']),
+        'subsample': random.choice(param_grid['subsample']),
+        'colsample_bytree': random.choice(param_grid['colsample_bytree']),
+        'colsample_bylevel': random.choice(param_grid['colsample_bylevel']),
+        'colsample_bynode': random.choice(param_grid['colsample_bynode']),
+        'alpha': random.choice(param_grid['alpha']),
+        'lambda': random.choice(param_grid['lambda'])
+    }
+
+    num_boost_round = random.choice(param_grid['num_boost_round'])
+
+    cv_score = xgb_cv_score(params, dtrain, num_boost_round=num_boost_round)
+
+    if cv_score < best_score:
+        best_score = cv_score
+        best_params = params.copy()
+        best_params['num_boost_round'] = num_boost_round
+
+# Train final model with best parameters
+final_model = xgb.train(
+    best_params,
+    dtrain,
+    num_boost_round=best_params['num_boost_round']
 )
 
-random_search = RandomizedSearchCV(
-    estimator=model,
-    param_distributions=param_grid,
-    n_iter=50,  # Number of random samples of parameter grid to try, we can try 50 or even 100.
-    scoring='accuracy',  # Metric for evaluation
-    cv=10,  # Number of cross-validation folds
-    verbose=1,  # Show progress
-    random_state=42,  # Reproducibility
-    n_jobs=-1)  # Use all available CPU processors
+# Make predictions
+y_pred = final_model.predict(dtest)
+y_pred_binary = [1 if p > 0.5 else 0 for p in y_pred]
+test_accuracy = accuracy_score(y_test, y_pred_binary)
 
-random_search.fit(X_train, y_train)
-print("Best Parameters:", random_search.best_params_)
-print("Best Accuracy:", random_search.best_score_)
-
-# Initialize the CatBoost model with the best parameters
-best_params = random_search.best_params_
-model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=False)
-
-# Train the model with the training pool and evaluate on the test pool
-model.fit(train_pool, eval_set=test_pool, verbose=False)
-
-# Optional: If you want to access final predictions
-y_pred = model.predict(test_pool)
+print("Best Parameters:", best_params)
+print("Best CV Error:", best_score)
+print("Test Accuracy:", test_accuracy)
