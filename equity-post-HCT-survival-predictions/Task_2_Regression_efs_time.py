@@ -213,16 +213,16 @@ dtrain.set_float_info('label_upper_bound', y_train_aft[:, 1])
 dtest.set_float_info('label_lower_bound', y_test_aft[:, 0])
 dtest.set_float_info('label_upper_bound', y_test_aft[:, 1])
 
-# Define parameter ranges for AFT model
+# Fine-tuned parameter ranges based on previous best results
 param_grid = {
-    'max_depth': [random.randint(3, 8) for _ in range(10)],
-    'learning_rate': [random.uniform(0.01, 0.3) for _ in range(10)],
-    'min_child_weight': [random.uniform(0, 7) for _ in range(10)],
-    'subsample': [random.uniform(0.5, 1) for _ in range(10)],
-    'colsample_bytree': [random.uniform(0.5, 1) for _ in range(10)],
-    'num_boost_round': [random.randint(100, 1000) for _ in range(10)],
-    'aft_loss_distribution': ['normal', 'logistic', 'extreme'],
-    'aft_loss_distribution_scale': [random.uniform(0.1, 10.0) for _ in range(10)]
+    'max_depth': (6, 8),  # Centered around previous best of 7
+    'learning_rate': (0.08, 0.20),  # Centered around previous best of 0.139
+    'min_child_weight': (5.0, 8.0),  # Centered around previous best of 6.52
+    'subsample': (0.85, 0.99),  # Centered around previous best of 0.921
+    'colsample_bytree': (0.45, 0.70),  # Centered around previous best of 0.573
+    'aft_loss_distribution': ['normal', 'logistic'],  # Keeping normal and logistic
+    'aft_loss_distribution_scale': (0.8, 2.0),  # Centered around previous best of 1.365
+    'num_boost_round': (800, 1200)  # Centered around previous best of 982
 }
 
 
@@ -251,16 +251,17 @@ for i in range(n_iter):
         'objective': 'survival:aft',
         'eval_metric': 'aft-nloglik',
         'tree_method': 'hist',
-        'max_depth': random.randint(3, 8),
-        'learning_rate': random.uniform(0.01, 0.3),
-        'min_child_weight': random.uniform(0, 7),
-        'subsample': random.uniform(0.5, 1),
-        'colsample_bytree': random.uniform(0.5, 1),
-        'aft_loss_distribution': random.choice(['normal', 'logistic', 'extreme']),
-        'aft_loss_distribution_scale': random.uniform(0.1, 10.0)
+        'max_depth': random.randint(param_grid['max_depth'][0], param_grid['max_depth'][1]),
+        'learning_rate': random.uniform(param_grid['learning_rate'][0], param_grid['learning_rate'][1]),
+        'min_child_weight': random.uniform(param_grid['min_child_weight'][0], param_grid['min_child_weight'][1]),
+        'subsample': random.uniform(param_grid['subsample'][0], param_grid['subsample'][1]),
+        'colsample_bytree': random.uniform(param_grid['colsample_bytree'][0], param_grid['colsample_bytree'][1]),
+        'aft_loss_distribution': random.choice(param_grid['aft_loss_distribution']),
+        'aft_loss_distribution_scale': random.uniform(param_grid['aft_loss_distribution_scale'][0],
+                                                      param_grid['aft_loss_distribution_scale'][1])
     }
 
-    num_boost_round = random.randint(100, 1000)
+    num_boost_round = random.randint(param_grid['num_boost_round'][0], param_grid['num_boost_round'][1])
 
     try:
         cv_score = xgb_cv_score(current_params, dtrain, num_boost_round)
@@ -310,4 +311,4 @@ else:
     print(importance_df.head(10))
 
     # Save the model
-    final_model.save_model('xgboost_aft_model.json')
+    final_model.save_model('xgboost_aft_model_finetuned.json')
