@@ -37,6 +37,11 @@ This week's action:
 - [ ] 3. 先从理解项目目标开始。见“https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/discussion/550003” 帖子。C-Index不需要去考虑efs=0时候efs_time的不确定性。我们只需要确定efs_time严格意义上小于或者大于另外一个efs_time的情况。比如，见上链接帖子，C-Index Denominator里面没有D-F这一项，因为F是efs=0,虽然F的efs_time比D的短，但是我们不知道F是在D前面还是后面发病了，我们只知道F在efs_time之前没有发病。**所以，我们之前的误区就是我们尝试去quantify efs=0的不确定性。但是显然，主办方的C-Index显示我们不需要去比较不确定性的efs=0的time，我们只需要确定严格意义上小于或者大于另外一个efs_time的情况。** 所以，我们需要做的是classify efs=1 and efs=0, 然后根据classification的efs=1/0, 将efs=1 和efs=0的两个情况分开来做regression predict他们的efs_time.
 - [ ] 4. 现在主要矛盾和问题是如何解决缺失值。（classification & regression的数据不能有NA）
 
+2025-01-19
+- [ ] 1. Setup the classification model with XGboost, Catboost. Setup the regression model with XGboost in survival analysis mode.
+- [ ] 2. Tuning the mogitdel.
+- [ ] 3. Server setup.
+
 ### Notes for the meeting
 **1. Data cleaning & Imputation**
 
