@@ -180,7 +180,8 @@ model = CatBoostClassifier(
     loss_function='Logloss',
     verbose=True, # Suppress training output for readability
     one_hot_max_size=20,
-    cat_features=categorical_list
+    cat_features=categorical_list,
+    #task_type="GPU" # Do not enable GPU unless you are on a GPU server
 )
 
 random_search = RandomizedSearchCV(
