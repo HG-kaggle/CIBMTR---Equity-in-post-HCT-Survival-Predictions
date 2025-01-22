@@ -169,12 +169,12 @@ test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
 
 # Define the parameter grid for the random grid search
 param_grid = {
-    'iterations': randint(800, 2000),
-    'depth': randint(3, 6),
-    'learning_rate': uniform(0.001, 0.036),
-    'l2_leaf_reg': uniform(3, 7),
-    'border_count': randint(64, 256),  # Number of splits for numerical features
-    # CYCLE 06
+    'iterations': randint(1100, 1900),
+    'depth': [3],
+    'learning_rate': uniform(0.001, 0.03),
+    'l2_leaf_reg': uniform(7, 9),
+    'border_count': [240],
+    # CYCLE 07
 }
 
 model = CatBoostClassifier(
