@@ -174,18 +174,18 @@ dtest = xgb.DMatrix(X_test, label=y_test, enable_categorical=True)
 # Define parameter ranges for random search
 param_grid = {
     "booster": ["gbtree"],
-    'min_child_weight': [random.uniform(4.4, 6.4) for _ in range(50)],
-    'max_depth': [1,2,3],
-    'eta': [random.uniform(0.5, 0.8) for _ in range(50)],  # learning_rate
-    'gamma': [random.uniform(0.1, 0.4) for _ in range(50)],
-    'max_delta_step': [random.uniform(0.8, 1.5) for _ in range(50)],
-    'subsample': [random.uniform(0.1, 0.4) for _ in range(50)],
-    "colsample_bytree": [random.uniform(0.01, 0.04) for _ in range(50)],
-    "colsample_bylevel": [random.uniform(0.1, 0.5) for _ in range(50)],
-    "colsample_bynode": [random.uniform(0.35, 0.55) for _ in range(50)],
-    'num_boost_round': [random.randint(700, 1000) for _ in range(100)],
-    'alpha': [random.uniform(6, 8) for _ in range(50)],
-    'lambda': [random.uniform(13, 15) for _ in range(50)]
+    'min_child_weight': [random.uniform(1, 5) for _ in range(50)],
+    'max_depth': [3, 4, 5, 6],  # Increased depth range
+    'eta': [random.uniform(0.01, 0.3) for _ in range(50)],  # Lower learning rate
+    'gamma': [random.uniform(0, 0.5) for _ in range(50)],
+    'max_delta_step': [random.uniform(0, 1) for _ in range(50)],
+    'subsample': [random.uniform(0.6, 0.9) for _ in range(50)],  # Higher subsample
+    "colsample_bytree": [random.uniform(0.6, 0.9) for _ in range(50)],  # Higher colsample
+    "colsample_bylevel": [random.uniform(0.6, 0.9) for _ in range(50)],
+    "colsample_bynode": [random.uniform(0.6, 0.9) for _ in range(50)],
+    'num_boost_round': [random.randint(100, 500) for _ in range(100)],  # Fewer rounds
+    'alpha': [random.uniform(0, 5) for _ in range(50)],  # Lower regularization
+    'lambda': [random.uniform(0, 5) for _ in range(50)]
 }
 
 
