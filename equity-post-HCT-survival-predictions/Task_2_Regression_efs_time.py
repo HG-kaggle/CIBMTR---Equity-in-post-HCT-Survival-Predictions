@@ -177,14 +177,19 @@ y_test_event = test_set['efs']
 
 # Create proper label format for AFT
 def prepare_aft_labels(time, event):
-    # For each instance we need lower and upper bounds
-    # For uncensored data: lower_bound = upper_bound = observed_time
-    # For censored data: lower_bound = observed_time, upper_bound = large value
-    # We ensure no time is less than the minimum observed event time (0.333)
-    y_lower_bound = np.maximum(time.values, 0.333)  # Use minimum observed event time as floor
-    y_upper_bound = np.where(event == 0,
-                             sys.float_info.max,
-                             y_lower_bound)  # For uncensored data, upper = lower
+    """
+    For event=1 (uncensored): y_lower = -INF, y_upper = efs_time
+    For event=0 (censored): y_lower = efs_time, y_upper = INF
+    """
+    INF = np.inf
+    y_lower_bound = np.where(event == 1,
+                             -INF,
+                             time.values)
+
+    y_upper_bound = np.where(event == 1,
+                             time.values,
+                             INF)
+
     return np.vstack((y_lower_bound, y_upper_bound)).T
 
 
