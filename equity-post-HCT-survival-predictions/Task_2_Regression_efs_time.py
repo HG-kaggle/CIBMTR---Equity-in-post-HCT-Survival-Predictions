@@ -1,9 +1,12 @@
 # All the group members have been added to the project
 import random
+import sys
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 import xgboost as xgb
+import matplotlib.pyplot as plt
 
 import seaborn as sns
 import matplotlib as mp
@@ -180,7 +183,7 @@ def prepare_aft_labels(time, event):
     # We ensure no time is less than the minimum observed event time (0.333)
     y_lower_bound = np.maximum(time.values, 0.333)  # Use minimum observed event time as floor
     y_upper_bound = np.where(event == 0,
-                             160.0,  # Using 160.0 as upper bound for censored data
+                             sys.float_info.max,
                              y_lower_bound)  # For uncensored data, upper = lower
     return np.vstack((y_lower_bound, y_upper_bound)).T
 
@@ -312,3 +315,53 @@ else:
 
     # Save the model
     final_model.save_model('xgboost_aft_model_finetuned.json')
+
+
+
+# After your imports, add:
+
+# After creating dtrain and dtest, add:
+accuracy_history = []
+
+
+class PlotIntermediateModel(xgb.callback.TrainingCallback):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def after_iteration(self, model, epoch, evals_log) -> bool:
+        y_pred = model.predict(dtest)
+        lower_bound = dtest.get_float_info('label_lower_bound')
+        upper_bound = dtest.get_float_info('label_upper_bound')
+        acc = np.sum(np.logical_and(y_pred >= lower_bound, y_pred <= upper_bound)) / len(y_pred)
+        accuracy_history.append(acc)
+        return False
+
+# Modify your final model training:
+res = {}
+final_model = xgb.train(
+    best_params,
+    dtrain,
+    num_boost_round=best_params['num_boost_round'],
+    evals=[(dtrain, 'train'), (dtest, 'test')],
+    early_stopping_rounds=50,
+    evals_result=res,
+    callbacks=[PlotIntermediateModel()],
+    verbose_eval=100
+)
+
+# Add after model training, before feature importance:
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(res['train']['aft-nloglik'], 'b-o', label='Train')
+plt.plot(res['test']['aft-nloglik'], 'r-o', label='Test')
+plt.xlabel('Boosting Iterations')
+plt.ylabel('Negative Log-Likelihood')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(accuracy_history, 'g-o', label='Accuracy (%)')
+plt.xlabel('Boosting Iterations')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.tight_layout()
+plt.show()
