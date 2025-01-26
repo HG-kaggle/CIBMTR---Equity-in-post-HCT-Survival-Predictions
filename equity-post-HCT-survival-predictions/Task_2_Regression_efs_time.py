@@ -218,14 +218,14 @@ dtest.set_float_info('label_upper_bound', y_test_aft[:, 1])
 
 # Fine-tuned parameter ranges based on previous best results
 param_grid = {
-    'max_depth': (6, 8),  # Centered around previous best of 7
-    'learning_rate': (0.08, 0.20),  # Centered around previous best of 0.139
-    'min_child_weight': (5.0, 8.0),  # Centered around previous best of 6.52
-    'subsample': (0.85, 0.99),  # Centered around previous best of 0.921
-    'colsample_bytree': (0.45, 0.70),  # Centered around previous best of 0.573
-    'aft_loss_distribution': ['normal', 'logistic'],  # Keeping normal and logistic
-    'aft_loss_distribution_scale': (0.8, 2.0),  # Centered around previous best of 1.365
-    'num_boost_round': (800, 1200)  # Centered around previous best of 982
+    'max_depth': (3, 8),
+    'learning_rate': (0.01, 0.3),
+    'min_child_weight': (0, 7),
+    'subsample': (0.5, 1),
+    'colsample_bytree': (0.5,1),
+    'aft_loss_distribution': ['normal', 'logistic', 'extreme'],
+    'aft_loss_distribution_scale': (0.1, 10.0),
+    'num_boost_round': (800, 1200)
 }
 
 

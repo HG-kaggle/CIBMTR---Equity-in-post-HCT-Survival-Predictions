@@ -173,7 +173,7 @@ param_grid = {
     'depth': [3],
     'learning_rate': uniform(0.048, 0.058),
     'l2_leaf_reg': uniform(5.2, 5.7),
-    'border_count': randint(235, 245),
+    'border_count':[240],
     # CYCLE 10
 }
 
