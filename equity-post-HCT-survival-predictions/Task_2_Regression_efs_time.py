@@ -223,14 +223,14 @@ dtest.set_float_info('label_upper_bound', y_test_aft[:, 1])
 
 # Fine-tuned parameter ranges based on previous best results
 param_grid = {
-    'max_depth': (3, 8),
-    'learning_rate': (0.01, 0.3),
-    'min_child_weight': (0, 7),
-    'subsample': (0.5, 1),
-    'colsample_bytree': (0.5,1),
-    'aft_loss_distribution': ['normal', 'logistic', 'extreme'],
-    'aft_loss_distribution_scale': (0.1, 10.0),
-    'num_boost_round': (800, 1200)
+    'max_depth': (4, 6),  # Narrow around best value 5
+    'learning_rate': (0.01, 0.1),  # Lower range since 0.045 worked well
+    'min_child_weight': (0.5, 2.0),  # Center around 1.27
+    'subsample': (0.5, 0.7),  # Focus near 0.57
+    'colsample_bytree': (0.8, 1.0),  # Higher range since 0.88 performed well
+    'aft_loss_distribution': ['logistic'],  # Keep best distribution
+    'aft_loss_distribution_scale': (7.0, 9.0),  # Center around 8.41
+    'num_boost_round': (700, 900)  # Center around 823
 }
 
 
@@ -251,7 +251,7 @@ def xgb_cv_score(params, dtrain, num_boost_round, nfold=5):
 # Random search
 best_score = float('inf')
 best_params = None
-n_iter = 50
+n_iter = 100
 
 print("Starting random search for AFT model optimization...")
 for i in range(n_iter):
