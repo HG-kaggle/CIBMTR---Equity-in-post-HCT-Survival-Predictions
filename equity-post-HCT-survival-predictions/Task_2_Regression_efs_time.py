@@ -223,11 +223,11 @@ dtest.set_float_info('label_upper_bound', y_test_aft[:, 1])
 
 # Fine-tuned parameter ranges based on previous best results
 param_grid = {
-    'max_depth': (3, 6),
+    'max_depth': (1, 5),
     'learning_rate': (0.001, 0.1),
-    'min_child_weight': (0.5, 1.5),
-    'subsample': (0.65, 0.75),
-    'colsample_bytree': (0.9, 1.0),
+    'min_child_weight': (0.60, 1.0),
+    'subsample': (0.65, 0.70),
+    'colsample_bytree': (0.85, 1.0),
     'aft_loss_distribution': ['logistic'],
     'aft_loss_distribution_scale': (9.5, 10.0),
     'num_boost_round': (700, 900)
