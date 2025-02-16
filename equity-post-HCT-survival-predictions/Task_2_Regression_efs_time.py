@@ -225,12 +225,12 @@ dtest.set_float_info('label_upper_bound', y_test_aft[:, 1])
 param_grid = {
     'max_depth': (2, 3),
     'learning_rate': (0.001, 0.1),
-    'min_child_weight': (0.62, 0.7),
-    'subsample': (0.65, 0.70),
-    'colsample_bytree': (0.85, 1.0),
+    'min_child_weight': (0.65, 0.7),
+    'subsample': (0.65, 0.75),
+    'colsample_bytree': (0.9, 1),
     'aft_loss_distribution': ['logistic'],
     'aft_loss_distribution_scale': (9.95, 10.0),
-    'num_boost_round': (800, 900)
+    'num_boost_round': (850, 900)
 }
 
 
@@ -251,7 +251,7 @@ def xgb_cv_score(params, dtrain, num_boost_round, nfold=5):
 # Random search
 best_score = float('inf')
 best_params = None
-n_iter = 100
+n_iter = 200
 
 print("Starting random search for AFT model optimization...")
 for i in range(n_iter):
@@ -297,7 +297,7 @@ else:
         num_boost_round=best_params['num_boost_round'],
         evals=[(dtrain, 'train'), (dtest, 'test')],
         early_stopping_rounds=50,
-        verbose_eval=100
+        verbose_eval=200
     )
 
     # Make predictions
@@ -351,7 +351,7 @@ final_model = xgb.train(
     early_stopping_rounds=50,
     evals_result=res,
     callbacks=[PlotIntermediateModel()],
-    verbose_eval=100
+    verbose_eval=200
 )
 
 # Add after model training, before feature importance:
