@@ -64,6 +64,8 @@ data_efs1_idx = list(sort_efs_time(data_efs1).keys())
 data_efs0_idx = list(sort_efs_time(data_efs0).keys())
 sorted_data = sort_efs_time(data)
 sorted_data_idx = list(sorted_data.keys())
+print(len(sorted_data))
+print("amount of efs1: ", len(data_efs1))
 #print(data_efs0_idx)
 #print(len(data_efs1_idx))
 
@@ -72,6 +74,7 @@ for key in sorted_data:
     if sorted_data[key]['efs'] == 1:
         #risk_score_dict[key] = 1 - key / len(sorted_data) #use index to calculate risk score
         risk_score_dict[key] = 1 - sorted_data[key]['efs_time'] / sorted_data[data_efs1_idx[-1]]['efs_time'] #use efs_time to calculate risk score
+print(len(risk_score_dict))
 for idx in range(len(sorted_data_idx)):
     if sorted_data[sorted_data_idx[idx]]['efs'] == 1 and sorted_data_idx[idx] != data_efs1_idx[-1]:
         # if sorted_data_idx[idx] == data_efs1_idx[-2]:
@@ -81,32 +84,41 @@ for idx in range(len(sorted_data_idx)):
         while sorted_data[sorted_data_idx[idx + step_to_next_efs1]]['efs'] != 1:
             step_to_next_efs1 += 1
             efs0_count += 1
-        if efs0_count == 0:
-            continue
+        # if efs0_count == 0:
+        #     continue
         next_efs1_idx = sorted_data_idx[idx + step_to_next_efs1]
-        for i in range(1,efs0_count):
+        for i in range(1,efs0_count+1):
             current_id = sorted_data_idx[idx + i]
             current_efstime = sorted_data[current_id]['efs_time']
             previous_efstime = sorted_data[sorted_data_idx[idx]]['efs_time']
             next_efstime = sorted_data[next_efs1_idx]['efs_time']
             position_weight = (current_efstime - previous_efstime) / (next_efstime - previous_efstime)
 
-            risk_score_dict[sorted_data_idx[idx + i]] = (position_weight * risk_score_dict[sorted_data_idx[idx]] + (
-                        1-position_weight) * risk_score_dict[next_efs1_idx]) / 2
-    elif sorted_data[sorted_data_idx[idx]]['efs'] == 1 and idx == sorted_data_idx[-1]:
-        efs0_count = 1
-        while sorted_data[sorted_data_idx[idx + efs0_count]]['efs'] != 1:
-            efs0_count += 1
+            #risk_score_dict[sorted_data_idx[idx + i]] = (position_weight * risk_score_dict[sorted_data_idx[idx]] + (1-position_weight) * risk_score_dict[next_efs1_idx]) / 2
+            risk_score_dict[sorted_data_idx[idx + i]] = position_weight * risk_score_dict[sorted_data_idx[idx]] + ((1 - position_weight) * risk_score_dict[next_efs1_idx] - position_weight * risk_score_dict[sorted_data_idx[idx]]) / 2
+    #elif sorted_data[sorted_data_idx[idx]]['efs'] == 1 and sorted_data_idx[idx] == data_efs1_idx[-1]:
+    elif sorted_data[sorted_data_idx[idx]]['efs'] == 1:
+        efs0_count = len(sorted_data_idx) - idx - 1
+        # while sorted_data[sorted_data_idx[idx + efs0_count]]['efs'] != 1:
+        #     efs0_count += 1
 
-        for i in range(1,efs0_count):
+        for i in range(1,efs0_count+1):
             current_idx = sorted_data_idx[idx + i]
             current_efstime = sorted_data[current_idx]['efs_time']
             previous_efstime = sorted_data[sorted_data_idx[idx]]['efs_time']
             max_efstime = sorted_data[sorted_data_idx[-1]]['efs_time']
             position_weight = (current_efstime - previous_efstime) / (max_efstime - previous_efstime)
-            risk_score_dict[sorted_data_idx[idx + i]] = (position_weight * risk_score_dict[sorted_data_idx[idx]] + (
-                        1 - position_weight) * risk_score_dict[max_efstime]) / 2
+            risk_score_dict[sorted_data_idx[idx + i]] = (position_weight * risk_score_dict[sorted_data_idx[idx]]) / 2
 
-risk_score_dict = dict(sorted(risk_score_dict.items()))
 print(risk_score_dict)
+risk_score_dict = dict(sorted(risk_score_dict.items()))
+#print(risk_score_dict)
+#print(data)
+print(len(risk_score_dict))
+
+prev = -1
+for key in risk_score_dict:
+    if key - prev != 1:
+        print(key)
+    prev = key
 #print(sorted_data)
