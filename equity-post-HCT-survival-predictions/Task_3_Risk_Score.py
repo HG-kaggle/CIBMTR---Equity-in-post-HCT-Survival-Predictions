@@ -32,11 +32,15 @@ data_efs1_idx = list(sort_efs_time(data_efs1).keys())
 
 # Risk score calculation
 risk_score_dict = {}
+max_efs_time = sorted_data[data_efs1_idx[-1]]['efs_time']  # Get max time for normalization
+
 for key in sorted_data:
     if sorted_data[key]['efs'] == 1:
-        risk_score_dict[key] = 1 - sorted_data[key]['efs_time'] / sorted_data[data_efs1_idx[-1]]['efs_time']
+        risk_score_dict[key] = 1 - sorted_data[key]['efs_time'] / max_efs_time
 
-# Fill risk scores for efs=0 using interpolation
+# Fill risk scores for efs=0 using stable interpolation
+EPSILON = 1e-8  # Small constant to avoid division by zero
+
 for idx in range(len(sorted_data_idx)):
     if sorted_data[sorted_data_idx[idx]]['efs'] == 1:
         step_to_next_efs1 = 1
@@ -47,14 +51,22 @@ for idx in range(len(sorted_data_idx)):
 
         next_efs1_idx = sorted_data_idx[idx + step_to_next_efs1] if idx + step_to_next_efs1 < len(sorted_data_idx) else sorted_data_idx[-1]
 
+        prev_efstime = sorted_data[sorted_data_idx[idx]]['efs_time']
+        next_efstime = sorted_data[next_efs1_idx]['efs_time']
+
+        denom = tf.maximum(next_efstime - prev_efstime, EPSILON)  # Avoid near-zero division
+
         for i in range(1, efs0_count + 1):
             current_idx = sorted_data_idx[idx + i]
             current_efstime = sorted_data[current_idx]['efs_time']
-            previous_efstime = sorted_data[sorted_data_idx[idx]]['efs_time']
-            next_efstime = sorted_data[next_efs1_idx]['efs_time']
-            position_weight = (current_efstime - previous_efstime) / (next_efstime - previous_efstime)
 
-            risk_score_dict[current_idx] = position_weight * risk_score_dict[sorted_data_idx[idx]] + ((1 - position_weight) * risk_score_dict[next_efs1_idx] - position_weight * risk_score_dict[sorted_data_idx[idx]]) / 2
+            position_weight = tf.divide(current_efstime - prev_efstime, denom)  # Stable division
+
+            # Stable interpolation formula
+            prev_risk = risk_score_dict[sorted_data_idx[idx]]
+            next_risk = risk_score_dict[next_efs1_idx]
+
+            risk_score_dict[current_idx] = prev_risk + position_weight * (next_risk - prev_risk)
 
 # Convert risk scores to TensorFlow tensors
 risk_score_dict = {key: tf.convert_to_tensor(value, dtype=tf.float32) for key, value in risk_score_dict.items()}
