@@ -19,7 +19,7 @@ def sort_efs_time(group):
     return {item[0]: item[1] for item in sorted_group}
 
 # Parse CSV file
-data = csv_parser('train.csv')
+data = csv_parser('/kaggle/input/equity-post-HCT-survival-predictions/train.csv')
 
 # Divide data into two groups based on efs value
 data_efs1 = {key: data[key] for key in data if data[key]['efs'] == 1}
