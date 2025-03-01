@@ -1,25 +1,24 @@
 import csv
 import tensorflow as tf
 
-# parse csv file
+# Parse CSV file
 def csv_parser(file_path):
     result = {}
     with open(file_path, 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             result[int(row['ID'])] = {
-                'efs': tf.cast(int(row['efs']), dtype=tf.int32),
-                'efs_time': tf.convert_to_tensor(float(row['efs_time']), dtype=tf.float32)
+                'efs': int(float(row['efs'])),  # Ensure it's an integer
+                'efs_time': float(row['efs_time'])  # Keep as float for sorting
             }
     return result
 
 # Sorting function
 def sort_efs_time(group):
-    sorted_group = sorted(group.items(), key=lambda x: x[1]['efs_time'].numpy())  # Convert tensor to numpy for sorting
-    return {item[0]: item[1] for item in sorted_group}
+    return dict(sorted(group.items(), key=lambda x: x[1]['efs_time']))  # Sort by efs_time
 
 # Parse CSV file
-data = csv_parser('/kaggle/input/equity-post-HCT-survival-predictions/train.csv')
+data = csv_parser('train.csv')
 
 # Divide data into two groups based on efs value
 data_efs1 = {key: data[key] for key in data if data[key]['efs'] == 1}
@@ -28,44 +27,51 @@ data_efs0 = {key: data[key] for key in data if data[key]['efs'] == 0}
 # Sort by efs_time
 sorted_data = sort_efs_time(data)
 sorted_data_idx = list(sorted_data.keys())
-data_efs1_idx = list(sort_efs_time(data_efs1).keys())
+sorted_efs1 = sort_efs_time(data_efs1)
+data_efs1_idx = list(sorted_efs1.keys())
 
 # Risk score calculation
 risk_score_dict = {}
-max_efs_time = sorted_data[data_efs1_idx[-1]]['efs_time']  # Get max time for normalization
+if data_efs1_idx:  # Ensure there's at least one efs=1 entry
+    max_efs_time = sorted_data[data_efs1_idx[-1]]['efs_time']  # Get max time for normalization
 
-for key in sorted_data:
-    if sorted_data[key]['efs'] == 1:
-        risk_score_dict[key] = 1 - sorted_data[key]['efs_time'] / max_efs_time
+    # Ensure all efs=1 entries have risk scores
+    for key in sorted_data:
+        if sorted_data[key]['efs'] == 1:
+            risk_score_dict[key] = 1 - sorted_data[key]['efs_time'] / max_efs_time
 
 # Fill risk scores for efs=0 using stable interpolation
 EPSILON = 1e-8  # Small constant to avoid division by zero
 
-for idx in range(len(sorted_data_idx)):
-    if sorted_data[sorted_data_idx[idx]]['efs'] == 1:
+for idx, key in enumerate(sorted_data_idx):
+    if sorted_data[key]['efs'] == 1:
         step_to_next_efs1 = 1
         efs0_count = 0
+
+        # Find the next efs=1 in the sorted list
         while (idx + step_to_next_efs1) < len(sorted_data_idx) and sorted_data[sorted_data_idx[idx + step_to_next_efs1]]['efs'] != 1:
             step_to_next_efs1 += 1
             efs0_count += 1
 
-        next_efs1_idx = sorted_data_idx[idx + step_to_next_efs1] if idx + step_to_next_efs1 < len(sorted_data_idx) else sorted_data_idx[-1]
+        next_efs1_idx = sorted_data_idx[idx + step_to_next_efs1] if idx + step_to_next_efs1 < len(sorted_data_idx) else None
 
-        prev_efstime = sorted_data[sorted_data_idx[idx]]['efs_time']
-        next_efstime = sorted_data[next_efs1_idx]['efs_time']
+        prev_efstime = sorted_data[key]['efs_time']
+        next_efstime = sorted_data[next_efs1_idx]['efs_time'] if next_efs1_idx else prev_efstime
 
-        denom = tf.maximum(next_efstime - prev_efstime, EPSILON)  # Avoid near-zero division
+        # Ensure no division by zero
+        denom = max(next_efstime - prev_efstime, EPSILON)
 
         for i in range(1, efs0_count + 1):
             current_idx = sorted_data_idx[idx + i]
             current_efstime = sorted_data[current_idx]['efs_time']
 
-            position_weight = tf.divide(current_efstime - prev_efstime, denom)  # Stable division
+            # Compute interpolation weight
+            position_weight = (current_efstime - prev_efstime) / denom
 
-            # Stable interpolation formula
-            prev_risk = risk_score_dict[sorted_data_idx[idx]]
-            next_risk = risk_score_dict[next_efs1_idx]
+            prev_risk = risk_score_dict.get(key, 0.0)  # Default to 0 if missing
+            next_risk = risk_score_dict.get(next_efs1_idx, prev_risk)  # Default to prev_risk if missing
 
+            # Compute interpolated risk score
             risk_score_dict[current_idx] = prev_risk + position_weight * (next_risk - prev_risk)
 
 # Convert risk scores to TensorFlow tensors
