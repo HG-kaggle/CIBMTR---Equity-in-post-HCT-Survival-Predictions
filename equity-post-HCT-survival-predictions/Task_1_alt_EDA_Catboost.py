@@ -171,7 +171,7 @@ param_grid = {
     'iterations': randint(1100, 2000),
     'depth': [3],
     'learning_rate': uniform(0.001, 0.07),
-    'l2_leaf_reg': uniform(6, 7.5),
+    'l2_leaf_reg': uniform(6, 10),
     'border_count': (245, 250),  # Number of splits for numerical features
 }
 
