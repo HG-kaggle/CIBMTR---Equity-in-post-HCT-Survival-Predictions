@@ -190,7 +190,7 @@ max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
 # Delete the rows with less than 80% Completeness (by NA & -1)
-# cat_train = cat_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 23)]
+boost_train = boost_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 12)]
 
 # Debugging
 
@@ -224,18 +224,18 @@ dtest = xgb.DMatrix(X_test, label=y_test, enable_categorical=True)
 # Define parameter ranges for random search
 param_grid = {
     "booster": ["gbtree"],
-    'min_child_weight': [random.uniform(1.9, 2.4) for _ in range(50)],
+    'min_child_weight': [random.uniform(1.5, 2.5) for _ in range(50)],
     'max_depth': [2, 3, 4],  # Increased depth range
-    'eta': [random.uniform(0.09, 0.12) for _ in range(50)],  # Lower learning rate
-    'gamma': [random.uniform(0.2, 0.25) for _ in range(50)],
-    'max_delta_step': [random.uniform(0.49, 0.54) for _ in range(50)],
-    'subsample': [random.uniform(0.65, 0.68) for _ in range(50)],  # Higher subsample
-    "colsample_bytree": [random.uniform(0.61, 0.65) for _ in range(50)],  # Higher colsample
-    "colsample_bylevel": [random.uniform(0.81, 0.85) for _ in range(50)],
-    "colsample_bynode": [random.uniform(0.72, 0.76) for _ in range(50)],
-    'num_boost_round': [random.randint(290, 340) for _ in range(100)],  # Fewer rounds
-    'alpha': [random.uniform(2.1, 2.5) for _ in range(50)],  # Lower regularization
-    'lambda': [random.uniform(2.8, 3.2) for _ in range(50)]
+    'eta': [random.uniform(0.08, 0.15) for _ in range(50)],  # Lower learning rate
+    'gamma': [random.uniform(0.18, 0.30) for _ in range(50)],
+    'max_delta_step': [random.uniform(0.45, 0.6) for _ in range(50)],
+    'subsample': [random.uniform(0.65, 0.71) for _ in range(50)],  # Higher subsample
+    "colsample_bytree": [random.uniform(0.6, 0.68) for _ in range(50)],  # Higher colsample
+    "colsample_bylevel": [random.uniform(0.76, 0.85) for _ in range(50)],
+    "colsample_bynode": [random.uniform(0.68, 0.76) for _ in range(50)],
+    'num_boost_round': [random.randint(270, 370) for _ in range(100)],  # Fewer rounds
+    'alpha': [random.uniform(1.4, 2.5) for _ in range(50)],  # Lower regularization
+    'lambda': [random.uniform(2.4, 3.5) for _ in range(50)]
 }
 
 
