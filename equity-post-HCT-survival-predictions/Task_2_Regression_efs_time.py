@@ -23,7 +23,7 @@ test_categorical = test.select_dtypes(exclude=[np.number]).columns
 test_numerical = test.select_dtypes(include=[np.number]).columns
 
 # Handling missing values
-num_imputer = SimpleImputer(strategy='median')
+num_imputer = SimpleImputer(strategy='mean')
 cat_imputer = SimpleImputer(strategy='most_frequent')
 
 # Fit and transform only on the feature columns (excluding 'efs' and 'efs_time')
@@ -72,9 +72,9 @@ dvalid.set_float_info('label_upper_bound', y_valid_aft[:, 1])
 param_grid = {
     'max_depth': (2, 3),
     'learning_rate': (0.01, 0.1),
-    'min_child_weight': (0.5, 0.65),
-    'subsample': (0.55, 0.75),
-    'colsample_bytree': (0.95, 1),
+    'min_child_weight': (0.3, 0.65),
+    'subsample': (0.6, 0.75),
+    'colsample_bytree': (0.97, 1),
     'aft_loss_distribution': ['logistic'],
     'aft_loss_distribution_scale': (9.9, 10.0),
     'alpha': (0, 0.08),
