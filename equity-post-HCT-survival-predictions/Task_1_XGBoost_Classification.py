@@ -190,7 +190,8 @@ max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
 # Delete the rows with less than 80% Completeness (by NA & -1)
-boost_train = boost_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 12)]
+
+boost_train = boost_train[((boost_train.eq('NA') | boost_train.eq(-1)).sum(axis = 1) < 12)]
 
 # Debugging
 
