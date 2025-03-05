@@ -12,8 +12,8 @@ from scipy.stats import uniform, randint
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
 
-train = pd.read_csv('/kaggle/input/equity-post-HCT-survival-predictions/train.csv')
-validation= pd.read_csv("/kaggle/input/equity-post-HCT-survival-predictions/test.csv")
+train = pd.read_csv('train.csv')
+validation= pd.read_csv("test.csv")
 
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
 numerical_columns = train.select_dtypes(include=[np.number]).columns
