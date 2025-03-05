@@ -191,7 +191,9 @@ categorical_list = categorical_columns.tolist()
 
 # Delete the rows with less than 80% Completeness (by NA & -1)
 
+
 boost_train = boost_train[((boost_train.eq('NA') | boost_train.eq(-1)).sum(axis = 1) < 16)]
+
 
 # Debugging
 
