@@ -141,20 +141,20 @@ train['hepatic_combined'] = train.apply(combine_hepatic, axis=1)
 
 train = train.drop(columns=['hepatic_severe', 'hepatic_mild'])
 
-# Combine 'pulm_severe' & 'pulm_mild'
+# Combine 'pulm_severe' & 'pulm_moderate'
 def combine_pulm(row):
     if row['pulm_severe'] == 'Yes':
         return 'Severe'
-    elif row['pulm_mild'] == 'Yes':
+    elif row['pulm_moderate'] == 'Yes':
         return 'Mild'
-    elif row['pulm_severe'] == 'NA' and row['pulm_mild'] == 'NA':
+    elif row['pulm_severe'] == 'NA' and row['pulm_moderate'] == 'NA':
         return 'NA'
     else:
         return 'Light'
 
 train['pulm_combined'] = train.apply(combine_pulm, axis=1)
 
-train = train.drop(columns=['pulm_severe', 'pulm_mild'])
+train = train.drop(columns=['pulm_severe', 'pulm_moderate'])
 
 # Combine 'prod_type' & 'graft_type'
 def combine_type(row):
