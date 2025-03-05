@@ -10,6 +10,62 @@ from category_encoders import TargetEncoder
 train = pd.read_csv('train.csv')
 test = pd.read_csv('test.csv')
 
+
+def combine_hepatic(row):
+    if row['hepatic_severe'] == 'Yes':
+        return 'Severe'
+    elif row['hepatic_mild'] == 'Yes':
+        return 'Mild'
+    elif row['hepatic_severe'] == 'NA' and row['hepatic_mild'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
+
+
+train['hepatic_combined'] = train.apply(combine_hepatic, axis=1)
+test['hepatic_combined'] = test.apply(combine_hepatic, axis=1)
+
+
+train = train.drop(columns=['hepatic_severe', 'hepatic_mild'])
+test = test.drop(columns=['hepatic_severe', 'hepatic_mild'])
+
+
+# Combine 'pulm_severe' & 'pulm_moderate'
+def combine_pulm(row):
+    if row['pulm_severe'] == 'Yes':
+        return 'Severe'
+    elif row['pulm_moderate'] == 'Yes':
+        return 'Mild'
+    elif row['pulm_severe'] == 'NA' and row['pulm_moderate'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
+
+train['pulm_combined'] = train.apply(combine_pulm, axis=1)
+test['pulm_combined'] = test.apply(combine_pulm, axis=1)
+train = train.drop(columns=['pulm_severe', 'pulm_moderate'])
+test = test.drop(columns=['pulm_severe', 'pulm_moderate'])
+
+
+# Combine 'prod_type' & 'graft_type'
+def combine_type(row):
+    if row['prod_type'] == 'BM' and row['graft_type'] == 'Bone marrow':
+        return 'BM'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Peripheral blood':
+        return 'PB'
+    elif row['prod_type'] == 'BM' and row['graft_type'] == 'Peripheral blood':
+        return 'BM/PB'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Bone marrow':
+        return 'PB/BM'
+    else:
+        return 'NA'
+
+train['type_combined'] = train.apply(combine_type, axis=1)
+test['type_combined'] = test.apply(combine_type, axis=1)
+
+train = train.drop(columns=['prod_type', 'graft_type'])
+test = test.drop(columns=['prod_type', 'graft_type'])
+
 # Drop ID column if it exists
 train_efs = train["efs"]
 train_efs_time = train["efs_time"]
