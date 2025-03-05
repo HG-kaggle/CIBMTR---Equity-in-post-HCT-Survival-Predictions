@@ -177,8 +177,7 @@ train = train.drop(columns=['prod_type', 'graft_type'])
 
 df = pd.DataFrame(train)
 # remove column "ID" and "efs_time"
-cat_train = train.drop(columns=['ID'])
-cat_train = cat_train.drop(columns=['efs_time'])
+cat_train = train.drop(columns=['ID', 'efs', 'efs_time'])
 
 # Select categorical columns and Find the maximum cardinality
 categorical_columns = cat_train.select_dtypes(include=['object', 'category']).columns
@@ -187,7 +186,7 @@ max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
 # Delete the rows with less than 80% Completeness (by NA & -1)
-cat_train = cat_train[((cat_train.eq('NA') | cat_train.eq(-1)).sum(axis = 1) < 24)]
+# cat_train = cat_train[((cat_train.eq('NA') | cat_train.eq(-1)).sum(axis = 1) < 24)]
 
 # Debugging
 
@@ -203,10 +202,10 @@ print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
 
 # train test split of train with efs = 1
 train_set, test_set = train_test_split(cat_train, test_size=0.25, random_state=42)
-X_train = train_set.drop(columns=['efs'])  # Features of train data
-y_train = train_set['efs']  # Outcome of train data
-X_test = test_set.drop(columns=['efs'])  # Features of test data
-y_test = test_set['efs']  # Target of test data
+X_train = train_set.drop(columns=['efs', 'efs_time'])  # Features of train data
+y_train = train_set['efs', 'efs_time']  # Outcome of train data
+X_test = test_set.drop(columns=['efs', 'efs_time'])  # Features of test data
+y_test = test_set['efs', 'efs_time']  # Target of test data
 # Convert the dataframes to numpy arrays (CatBoost works well with Pool format)
 train_pool = Pool(X_train, label=y_train, cat_features=categorical_list)
 test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
