@@ -183,7 +183,7 @@ param_grid = {
     "colsample_bytree": [random.uniform(0.6, 0.68) for _ in range(50)],  # Higher colsample
     "colsample_bylevel": [random.uniform(0.76, 0.85) for _ in range(50)],
     "colsample_bynode": [random.uniform(0.68, 0.76) for _ in range(50)],
-    'num_boost_round': [random.randint(260, 370) for _ in range(100)],  # Fewer rounds
+    'num_boost_round': [random.randint(270, 370) for _ in range(100)],  # Fewer rounds
     'alpha': [random.uniform(1.4, 2.5) for _ in range(50)],  # Lower regularization
     'lambda': [random.uniform(2.4, 3.5) for _ in range(50)]
 }
