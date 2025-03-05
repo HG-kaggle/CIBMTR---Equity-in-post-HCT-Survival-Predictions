@@ -1,12 +1,10 @@
-# All the group members have been added to the project
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib as mp
 import xgboost as xgb
 import scipy as sp
-from catboost import CatBoostClassifier, CatBoostRegressor, Pool
-from lifelines import CoxPHFitter
+from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import uniform, randint
 
@@ -14,25 +12,35 @@ from scipy.stats import uniform, randint
 # Part 1: Data cleaning, adding -1 for numerical missing values, and "NA" string value
 # for categorical missing values.
 
-train = pd.read_csv('train.csv')
-# This is for test purpose to fix
+train = pd.read_csv('/kaggle/input/equity-post-HCT-survival-predictions/train.csv')
+validation= pd.read_csv("/kaggle/input/equity-post-HCT-survival-predictions/test.csv")
 
 categorical_columns = train.select_dtypes(exclude=[np.number]).columns
 numerical_columns = train.select_dtypes(include=[np.number]).columns
+validation_categorical_columns = validation.select_dtypes(exclude=[np.number]).columns
+validation_numerical_columns = validation.select_dtypes(include=[np.number]).columns
 
 # Linear interpolation for numerical columns in data: we transform all NA into -1.
 for col in numerical_columns:
     if train[col].isna().sum() > 0:
         train[col] = train[col].fillna(-1)
 
+for col in validation_numerical_columns:
+    if validation[col].isna().sum() > 0:
+        validation[col] = validation[col].fillna(-1)
 # Fill categorical columns with string "NA" value.
 
 for col in categorical_columns:
     if train[col].isna().sum() > 0:
         train[col] = train[col].fillna('NA')
 
+for col in validation_categorical_columns:
+    if validation[col].isna().sum() > 0:
+        validation[col] = validation[col].fillna('NA')
+
 # Check if the processed train dataset has any missing values.
 print(train.isnull().sum())
+print(validation.isnull().sum())
 
 # This NA imputation for NA is not sufficient for categorical variables because
 # some categorical variables, such as dri_score, has values of 'N/A - non-malignant indication.'
@@ -46,6 +54,7 @@ na_mapping_dri = {
     'N/A - pediatric': 'NA-4'
 }
 train['dri_score'] = train['dri_score'].replace(na_mapping_dri)
+validation["dri_score"] = validation["dri_score"].replace(na_mapping_dri)
 
 # Replace NA strings for cyto_score:
 na_mapping_cyto = {
@@ -54,6 +63,7 @@ na_mapping_cyto = {
     'Not tested': 'NA'
 }
 train['cyto_score'] = train['cyto_score'].replace(na_mapping_cyto)
+validation["cyto_score"] = validation["cyto_score"].replace(na_mapping_cyto)
 
 # Replace NA string for conditioning_intensity:
 na_mapping_ci = {
@@ -61,12 +71,14 @@ na_mapping_ci = {
     'No drugs reported': 'NA'
 }
 train['conditioning_intensity'] = train['conditioning_intensity'].replace(na_mapping_ci)
+validation['conditioning_intensity'] = validation['conditioning_intensity'].replace(na_mapping_ci)
 
 # Impute not used value string for melphalan_dose:
 na_mapping_mel = {
     "N/A, Mel not given": 'Not Used'
 }
 train['melphalan_dose'] = train['melphalan_dose'].replace(na_mapping_mel)
+validation['melphalan_dose'] = validation['melphalan_dose'].replace(na_mapping_mel)
 
 
 def not_done_cleaning(data: pd.DataFrame):
@@ -87,6 +99,7 @@ def not_done_cleaning(data: pd.DataFrame):
 
 
 not_done_cleaning(train)
+not_done_cleaning(validation)
 
 
 def not_tested_cleaning(data: pd.DataFrame):
@@ -106,6 +119,7 @@ def not_tested_cleaning(data: pd.DataFrame):
 
 
 not_tested_cleaning(train)
+not_tested_cleaning(validation)
 
 
 def tbd_cleaning(data: pd.DataFrame):
@@ -124,9 +138,7 @@ def tbd_cleaning(data: pd.DataFrame):
             data[col_tbd] = data[col_tbd].replace(na_mapping_tbd)
 
 tbd_cleaning(train)
-
-# Combine strongly related columns
-
+tbd_cleaning(validation)
 # Combine 'hepatic_severe' & 'hepatic_mild'
 def combine_hepatic(row):
     if row['hepatic_severe'] == 'Yes':
@@ -177,19 +189,16 @@ train = train.drop(columns=['prod_type', 'graft_type'])
 # EDA and dataset for Catboost
 
 df = pd.DataFrame(train)
+df_validate = pd.DataFrame(validation)
 # remove column "ID" and "efs_time"
 cat_train = train.drop(columns=['ID'])
+cat_validation = validation.drop(columns=['ID'])
 
 # Select categorical columns and Find the maximum cardinality
 categorical_columns = cat_train.select_dtypes(include=['object', 'category']).columns
 cardinality = {col: cat_train[col].nunique() for col in categorical_columns}
 max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
-
-# Delete the rows with less than 80% Completeness (by NA & -1)
-# cat_train = cat_train[((cat_train.eq('NA') | cat_train.eq(-1)).sum(axis = 1) < 24)]
-
-# Debugging
 
 for col in categorical_list:
     print(f"Unique values in {col}: {cat_train[col].unique()}")
@@ -203,32 +212,31 @@ print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
 
 # train test split of train with efs = 1
 train_set, test_set = train_test_split(cat_train, test_size=0.25, random_state=42)
-y_test = test_set[['efs', 'efs_time']]  # Target of test data
-y_train = train_set[['efs', 'efs_time']]  # Outcome of train data
-X_train = train_set.drop(columns=['efs', 'efs_time'])  # Features of train data
-X_test = test_set.drop(columns=['efs', 'efs_time'])  # Features of test data
-
+y_train = train_set['efs']
+X_train = train_set.drop(columns=['efs'])  # Features of train data
+y_test = test_set['efs']
+X_test = test_set.drop(columns=['efs'])  # Features of test data
 # Convert the dataframes to numpy arrays (CatBoost works well with Pool format)
 train_pool = Pool(X_train, label=y_train, cat_features=categorical_list)
 test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
-
 # Use CatBoost
-
 # Define the parameter grid for the random grid search
 param_grid = {
-    'iterations': randint(1300, 1400),
+    'iterations': randint(1250, 1400),
     'depth': [3],
-    'learning_rate': uniform(0.001, 0.06),
-    'l2_leaf_reg': uniform(5, 6),
-    'border_count': [240],  # Number of splits for numerical features
+    'learning_rate': uniform(0.048, 0.07),
+    'l2_leaf_reg': uniform(5.2, 5.5),
+    'border_count':[240],
+    # CYCLE 10
 }
 
-model = CatBoostRegressor(
-    iterations=1000,
-    depth=6,
-    learning_rate=0.01,
-    loss_function='Survival',  # 关键参数
-    verbose=100
+model = CatBoostClassifier(
+    loss_function='Logloss',
+    verbose=False, # Suppress training output for readability
+    one_hot_max_size=20,
+    cat_features=categorical_list,
+    train_dir=None,
+    allow_writing_files=False,
 )
 
 random_search = RandomizedSearchCV(
@@ -247,10 +255,19 @@ print("Best Accuracy:", random_search.best_score_)
 
 # Initialize the CatBoost model with the best parameters
 best_params = random_search.best_params_
-model = CatBoostClassifier(**best_params, loss_function='Survival', verbose=False)
+model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=False)
 
 # Train the model with the training pool and evaluate on the test pool
 model.fit(train_pool, eval_set=test_pool, verbose=False)
+validation_pool = Pool(validation, cat_features=categorical_list)
+y_pred = model.predict(validation_pool, verbose = False)
+# Convert predictions to DataFrame
+validation['efs'] = y_pred.astype(int)  # Ensure predictions are integers
+# Load original test.csv file
+test_original = pd.read_csv('/kaggle/input/equity-post-HCT-survival-predictions/test.csv')
 
-# Optional: If you want to access final predictions
-y_pred = model.predict(test_pool)
+# Merge validation data with original test.csv based on 'ID'
+merged_test = test_original.merge(validation[['ID', 'efs_pred']], on='ID', how='left')
+# Save the merged file
+merged_test.to_csv("/kaggle/working/test_with_efs.csv", index=False)
+print("Predictions added and saved as test_with_efs.csv!")
