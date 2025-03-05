@@ -186,6 +186,9 @@ cardinality = {col: cat_train[col].nunique() for col in categorical_columns}
 max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
+# Delete the rows with less than 80% Completeness (by NA & -1)
+# cat_train = cat_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 23)]
+
 # Debugging
 
 for col in categorical_list:
@@ -195,9 +198,6 @@ for col in categorical_list:
 print("Cardinality of categorical features:")
 print(cardinality)
 print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
-
-# Delete the rows with less than 80% Completeness (by NA & -1)
-# cat_train = cat_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 23)]
 
 # Part 2: Classification of efs (ML) Use Catboost to classify efs (1 or 0)
 
