@@ -156,7 +156,7 @@ train['pulm_combined'] = train.apply(combine_pulm, axis=1)
 
 train = train.drop(columns=['pulm_severe', 'pulm_mild'])
 
-# Combine prod_type & graft_type
+# Combine 'prod_type' & 'graft_type'
 def combine_type(row):
     if row['prod_type'] == 'BM' and row['graft_type'] == 'Bone marrow':
         return 'BM'
