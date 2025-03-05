@@ -126,7 +126,52 @@ tbd_cleaning(train)
 
 # Combine strongly related columns
 
+# Combine 'hepatic_severe' & 'hepatic_mild'
+def combine_hepatic(row):
+    if row['hepatic_severe'] == 'Yes':
+        return 'Severe'
+    elif row['hepatic_mild'] == 'Yes':
+        return 'Mild'
+    elif row['hepatic_severe'] == 'NA' and row['hepatic_mild'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
 
+train['hepatic_combined'] = train.apply(combine_hepatic, axis=1)
+
+train = train.drop(columns=['hepatic_severe', 'hepatic_mild'])
+
+# Combine 'pulm_severe' & 'pulm_mild'
+def combine_pulm(row):
+    if row['pulm_severe'] == 'Yes':
+        return 'Severe'
+    elif row['pulm_mild'] == 'Yes':
+        return 'Mild'
+    elif row['pulm_severe'] == 'NA' and row['pulm_mild'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
+
+train['pulm_combined'] = train.apply(combine_pulm, axis=1)
+
+train = train.drop(columns=['pulm_severe', 'pulm_mild'])
+
+# Combine prod_type & graft_type
+def combine_type(row):
+    if row['prod_type'] == 'BM' and row['graft_type'] == 'Bone marrow':
+        return 'BM'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Peripheral blood':
+        return 'PB'
+    elif row['prod_type'] == 'BM' and row['graft_type'] == 'Peripheral blood':
+        return 'BM/PB'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Bone marrow':
+        return 'PB/BM'
+    else:
+        return 'NA'
+
+train['type_combined'] = train.apply(combine_type, axis=1)
+
+train = train.drop(columns=['prod_type', 'graft_type'])
 
 # EDA and dataset for Catboost
 
