@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib as mp
 import xgboost as xgb
 import scipy as sp
-from catboost import CatBoostClassifier, Pool
+from catboost import CatBoostClassifier, CatBoostRegressor, Pool
+from lifelines import CoxPHFitter
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import uniform, randint
 
@@ -177,7 +178,7 @@ train = train.drop(columns=['prod_type', 'graft_type'])
 
 df = pd.DataFrame(train)
 # remove column "ID" and "efs_time"
-cat_train = train.drop(columns=['ID', 'efs', 'efs_time'])
+cat_train = train.drop(columns=['ID'])
 
 # Select categorical columns and Find the maximum cardinality
 categorical_columns = cat_train.select_dtypes(include=['object', 'category']).columns
@@ -202,10 +203,11 @@ print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
 
 # train test split of train with efs = 1
 train_set, test_set = train_test_split(cat_train, test_size=0.25, random_state=42)
+y_test = test_set[['efs', 'efs_time']]  # Target of test data
+y_train = train_set[['efs', 'efs_time']]  # Outcome of train data
 X_train = train_set.drop(columns=['efs', 'efs_time'])  # Features of train data
-y_train = train_set['efs', 'efs_time']  # Outcome of train data
 X_test = test_set.drop(columns=['efs', 'efs_time'])  # Features of test data
-y_test = test_set['efs', 'efs_time']  # Target of test data
+
 # Convert the dataframes to numpy arrays (CatBoost works well with Pool format)
 train_pool = Pool(X_train, label=y_train, cat_features=categorical_list)
 test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
@@ -221,12 +223,12 @@ param_grid = {
     'border_count': [240],  # Number of splits for numerical features
 }
 
-model = CatBoostClassifier(
-    loss_function='Logloss',
-    verbose=True, # Suppress training output for readability
-    one_hot_max_size=20,
-    cat_features=categorical_list,
-    #task_type="GPU" # Do not enable GPU unless you are on a GPU server
+model = CatBoostRegressor(
+    iterations=1000,
+    depth=6,
+    learning_rate=0.01,
+    loss_function='Survival',  # 关键参数
+    verbose=100
 )
 
 random_search = RandomizedSearchCV(
@@ -245,7 +247,7 @@ print("Best Accuracy:", random_search.best_score_)
 
 # Initialize the CatBoost model with the best parameters
 best_params = random_search.best_params_
-model = CatBoostClassifier(**best_params, loss_function='Logloss', verbose=False)
+model = CatBoostClassifier(**best_params, loss_function='Survival', verbose=False)
 
 # Train the model with the training pool and evaluate on the test pool
 model.fit(train_pool, eval_set=test_pool, verbose=False)
