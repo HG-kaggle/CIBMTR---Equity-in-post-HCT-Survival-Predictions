@@ -126,17 +126,18 @@ dvalid.set_float_info('label_upper_bound', y_valid_aft[:, 1])
 
 # Set parameters with wider tuning range
 param_grid = {
-    'max_depth': (2, 3),
+    'max_depth': (2, 4),
     'learning_rate': (0.01, 0.1),
-    'min_child_weight': (0.3, 0.65),
-    'subsample': (0.6, 0.75),
+    'min_child_weight': (0.1, 0.3),
+    'subsample': (0.64, 0.75),
     'colsample_bytree': (0.97, 1),
-    'aft_loss_distribution': ['logistic'],
+    'aft_loss_distribution': ["normal",'logistic'],
     'aft_loss_distribution_scale': (9.9, 10.0),
-    'alpha': (0, 0.08),
-    'lambda': (0, 0.1),
-    'num_boost_round': (900, 1000)
+    'alpha': (0, 0.005),
+    'lambda': (0, 0.004),
+    'num_boost_round': (900, 2000)
 }
+
 
 def xgb_cv_score(params, dtrain, num_boost_round, nfold=5):
     """Run cross-validation for XGBoost AFT model"""
