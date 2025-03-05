@@ -127,6 +127,54 @@ def tbd_cleaning(data: pd.DataFrame):
 
 tbd_cleaning(train)
 
+# Combine strongly related columns
+
+# Combine 'hepatic_severe' & 'hepatic_mild'
+def combine_hepatic(row):
+    if row['hepatic_severe'] == 'Yes':
+        return 'Severe'
+    elif row['hepatic_mild'] == 'Yes':
+        return 'Mild'
+    elif row['hepatic_severe'] == 'NA' and row['hepatic_mild'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
+
+train['hepatic_combined'] = train.apply(combine_hepatic, axis=1)
+
+train = train.drop(columns=['hepatic_severe', 'hepatic_mild'])
+
+# Combine 'pulm_severe' & 'pulm_moderate'
+def combine_pulm(row):
+    if row['pulm_severe'] == 'Yes':
+        return 'Severe'
+    elif row['pulm_moderate'] == 'Yes':
+        return 'Mild'
+    elif row['pulm_severe'] == 'NA' and row['pulm_moderate'] == 'NA':
+        return 'NA'
+    else:
+        return 'Light'
+
+train['pulm_combined'] = train.apply(combine_pulm, axis=1)
+
+train = train.drop(columns=['pulm_severe', 'pulm_moderate'])
+
+# Combine 'prod_type' & 'graft_type'
+def combine_type(row):
+    if row['prod_type'] == 'BM' and row['graft_type'] == 'Bone marrow':
+        return 'BM'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Peripheral blood':
+        return 'PB'
+    elif row['prod_type'] == 'BM' and row['graft_type'] == 'Peripheral blood':
+        return 'BM/PB'
+    elif row['prod_type'] == 'PB' and row['graft_type'] == 'Bone marrow':
+        return 'PB/BM'
+    else:
+        return 'NA'
+
+train['type_combined'] = train.apply(combine_type, axis=1)
+
+train = train.drop(columns=['prod_type', 'graft_type'])
 
 # EDA and dataset for Catboost
 
@@ -141,6 +189,9 @@ cardinality = {col: boost_train[col].nunique() for col in categorical_columns}
 max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
+# Delete the rows with less than 80% Completeness (by NA & -1)
+# cat_train = cat_train[((train.eq('NA') | train.eq(-1)).sum(axis = 1) < 23)]
+
 # Debugging
 
 for col in categorical_list:
@@ -150,7 +201,6 @@ for col in categorical_list:
 print("Cardinality of categorical features:")
 print(cardinality)
 print(f"\nMaximum categorical feature cardinality: {max_cardinality}")
-
 
 for col in categorical_list:
    boost_train[col] = boost_train[col].astype('category')
