@@ -187,7 +187,7 @@ max_cardinality = max(cardinality.values()) if cardinality else 0
 categorical_list = categorical_columns.tolist()
 
 # Delete the rows with less than 80% Completeness (by NA & -1)
-# cat_train = cat_train[((cat_train.eq('NA') | cat_train.eq(-1)).sum(axis = 1) < 23)]
+cat_train = cat_train[((cat_train.eq('NA') | cat_train.eq(-1)).sum(axis = 1) < 16)]
 
 # Debugging
 
@@ -215,10 +215,10 @@ test_pool = Pool(X_test, label=y_test, cat_features=categorical_list)
 
 # Define the parameter grid for the random grid search
 param_grid = {
-    'iterations': randint(1300, 1400),
+    'iterations': randint(1100, 2000),
     'depth': [3],
-    'learning_rate': uniform(0.001, 0.06),
-    'l2_leaf_reg': uniform(5, 6),
+    'learning_rate': uniform(0.001, 0.07),
+    'l2_leaf_reg': uniform(3, 6),
     'border_count': [240],  # Number of splits for numerical features
 }
 
